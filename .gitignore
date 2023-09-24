@@ -1,19 +1,6 @@
-node_modules/**/*
-.expo/*
-npm-debug.*
-*.jks
-*.p8
-*.p12
-*.key
-*.mobileprovision
-*.orig.*
-web-build/
-.env
-
-.env
-
-# macOS
 .DS_Store
-
-aps_development.cer
+node_modules
 .env
+npm-debug.log
+build
+dist

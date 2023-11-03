@@ -1,14 +1,23 @@
+/* eslint-disable import/no-extraneous-dependencies */
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
 import morgan from 'morgan';
+import mongoose from 'mongoose';
+import dotenv from 'dotenv';
+import bodyParser from 'body-parser';
 import apiRoutes from './router';
+
+dotenv.config({ silent: true });
 
 // initialize
 const app = express();
 
+app.use(bodyParser.json());
+
 // enable/disable cross origin resource sharing if necessary
 app.use(cors());
+app.use(express.json());
 
 // enable/disable http request logging
 app.use(morgan('dev'));

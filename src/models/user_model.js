@@ -2,7 +2,7 @@ import mongoose, { Schema } from 'mongoose';
 import bcrypt from 'bcryptjs';
 
 const UserSchema = new Schema({
-  username: String,
+  username: { type: String, unique: true },
   password: { type: String },
   email: { type: String, unique: true, lowercase: true },
   role: { type: String, default: 'user' },
@@ -11,7 +11,7 @@ const UserSchema = new Schema({
   toJSON: { virtuals: true },
 });
 
-UserSchema.pre('save', async function beforeyYourModelSave(next) {
+UserSchema.pre('save', async function beforeYourModelSave(next) {
   // this is a reference to our model
   // the function runs in some other context so DO NOT bind it
   const user = this;

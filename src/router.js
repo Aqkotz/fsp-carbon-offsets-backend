@@ -1,5 +1,4 @@
 /* eslint-disable no-unused-vars */
-/* eslint-disable eqeqeq */
 import { Router } from 'express';
 import * as Users from './controllers/user_controller';
 import { requireAuth, requireSignin } from './services/passport';
@@ -9,6 +8,8 @@ const router = Router();
 router.get('/', (req, res) => {
   res.json({ message: 'welcome to FSP Carbon Offsets' });
 });
+
+router.get('/user', requireAuth, Users.getUser);
 
 // sign in a user, this takes a user object with email and password: {email, password}
 router.post('/signin', requireSignin, async (req, res) => {
@@ -21,7 +22,6 @@ router.post('/signin', requireSignin, async (req, res) => {
   }
 });
 
-// create a user usign signup route
 // req.body should have {email, password, userName}
 router.post('/signup', async (req, res) => {
   try {

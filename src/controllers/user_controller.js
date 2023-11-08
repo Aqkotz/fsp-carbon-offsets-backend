@@ -1,4 +1,3 @@
-/* eslint-disable no-plusplus */
 import jwt from 'jwt-simple';
 import User from '../models/user_model';
 

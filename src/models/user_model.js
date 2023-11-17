@@ -6,6 +6,9 @@ const UserSchema = new Schema({
   password: { type: String },
   email: { type: String, unique: true, lowercase: true },
   role: { type: String, default: 'user' },
+  goal: { type: Schema.Types.ObjectId, ref: 'UserGoal' },
+  firstName: { type: String },
+  lastName: { type: String },
 }, {
   toObject: { virtuals: true },
   toJSON: { virtuals: true },

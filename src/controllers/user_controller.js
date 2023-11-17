@@ -25,7 +25,9 @@ export const signin = (user) => {
   return tokenForUser(user);
 };
 
-export async function createUser({ email, password, username }) {
+export async function createUser({
+  email, password, username, firstName, lastName,
+}) {
   // See if a user with the given email exists
   const existingUser = await User.findOne({ email });
   if (existingUser) {
@@ -38,6 +40,8 @@ export async function createUser({ email, password, username }) {
   user.email = email;
   user.username = username;
   user.password = password;
+  user.firstName = firstName;
+  user.lastName = lastName;
 
   try {
     const newUser = await user.save();

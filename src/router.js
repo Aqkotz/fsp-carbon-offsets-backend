@@ -1,6 +1,7 @@
 /* eslint-disable no-unused-vars */
 import { Router } from 'express';
 import * as Users from './controllers/user_controller';
+import * as Survey from './controllers/survey_controller';
 import { requireAuth, requireSignin } from './services/passport';
 
 const router = Router();
@@ -8,6 +9,10 @@ const router = Router();
 router.get('/', (req, res) => {
   res.json({ message: 'welcome to FSP Carbon Offsets' });
 });
+
+router.post('/surveys', Survey.createSurvey);
+
+router.post('/surveys/calculate', Survey.getCarbonFootprint);
 
 router.get('/user', requireAuth, Users.getUser);
 
@@ -33,10 +38,7 @@ router.post('/signup', async (req, res) => {
       console.log(`user body not used: ${req.body}`);
       user = JSON.parse(Object.keys(req.body)[0]);
     }
-    console.log('in signup user, here is what backend is getting', user);
     const { newUser, token } = await Users.createUser(user);
-    console.log('newUser', newUser);
-    console.log('token', token);
     res.json({ newUser, token });
   } catch (error) {
     res.status(422).send({ error: error.toString() });

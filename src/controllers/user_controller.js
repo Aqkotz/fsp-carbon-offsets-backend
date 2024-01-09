@@ -60,7 +60,7 @@ export async function validateTicket(req, res) {
     const { ticket } = req.body;
     console.log('ticket: ', ticket);
     const response = await axios.get(`https://login.dartmouth.edu/cas/serviceValidate?service=http://localhost:5174/signedin&ticket=${ticket}`);
-    const { data } = response.data;
+    const { data } = response;
     console.log('data: ', data);
     xml2js.parseString(data, (err, result) => {
       if (err) {

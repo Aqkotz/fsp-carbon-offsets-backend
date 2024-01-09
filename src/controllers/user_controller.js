@@ -87,12 +87,14 @@ async function handleCasAuthenticationSuccess(result) {
 
   return {
     token,
-    user,
-    uid,
-    name,
-    did,
-    netid,
-    affil,
+    user: {
+      user,
+      uid,
+      name,
+      did,
+      netid,
+      affil,
+    },
   };
 }
 

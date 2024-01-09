@@ -1,4 +1,5 @@
 import jwt from 'jwt-simple';
+import axios from 'axios';
 import User from '../models/user_model';
 
 export const getUsers = async (req, res) => {
@@ -50,6 +51,18 @@ export async function createUser({
     return ({ newUser, token });
   } catch (error) {
     throw new Error(`create user error: ${error}`);
+  }
+}
+
+export async function validateTicket(req, res) {
+  try {
+    const { ticket } = req.body;
+    console.log('ticket: ', ticket);
+    const response = await axios.get(`https://login.dartmouth.edu/cas/serviceValidate?service=http://localhost:5174/&ticket=${ticket}`);
+    const { data } = response;
+    return res.json(data);
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
   }
 }
 

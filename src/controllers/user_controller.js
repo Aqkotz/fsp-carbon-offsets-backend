@@ -55,37 +55,75 @@ export async function createUser({
   }
 }
 
+async function handleCasAuthenticationSuccess(result) {
+  const user = result['cas:serviceResponse']['cas:authenticationSuccess'][0]['cas:user'][0];
+  const uid = result['cas:serviceResponse']['cas:authenticationSuccess'][0]['cas:attribute'][0].$.value;
+  const name = result['cas:serviceResponse']['cas:authenticationSuccess'][0]['cas:attribute'][1].$.value;
+  const did = result['cas:serviceResponse']['cas:authenticationSuccess'][0]['cas:attribute'][2].$.value;
+  const netid = result['cas:serviceResponse']['cas:authenticationSuccess'][0]['cas:attribute'][3].$.value;
+  const affil = result['cas:serviceResponse']['cas:authenticationSuccess'][0]['cas:attribute'][4].$.value;
+
+  console.log('attempting signin...');
+  let token = signin({ email: user, password: uid });
+  if (!token) {
+    console.log('attempting signup...');
+    try {
+      const u = {
+        email: user,
+        password: uid,
+        username: netid,
+        firstName: name,
+        lastName: name,
+      };
+      const newUser = await createUser(u);
+      token = newUser.token;
+      console.log(`signed up user: ${newUser}`);
+    } catch (error) {
+      throw new Error(error.toString());
+    }
+  } else {
+    console.log(`signed in user: ${user}`);
+  }
+
+  return {
+    token,
+    user,
+    uid,
+    name,
+    did,
+    netid,
+    affil,
+  };
+}
+
 export async function validateTicket(req, res) {
   try {
     const { ticket } = req.body;
     console.log('ticket: ', ticket);
+
     const response = await axios.get(`https://login.dartmouth.edu/cas/serviceValidate?service=http://localhost:5174/signedin&ticket=${ticket}`);
     const { data } = response;
     console.log('data: ', data);
-    xml2js.parseString(data, (err, result) => {
-      if (err) {
-        res.status(400).send('Error parsing XML');
-      } else {
-        const user = result['cas:serviceResponse']['cas:authenticationSuccess'][0]['cas:user'][0];
-        const uid = result['cas:serviceResponse']['cas:authenticationSuccess'][0]['cas:attribute'][0].$.value;
-        const name = result['cas:serviceResponse']['cas:authenticationSuccess'][0]['cas:attribute'][1].$.value;
-        const did = result['cas:serviceResponse']['cas:authenticationSuccess'][0]['cas:attribute'][2].$.value;
-        const netid = result['cas:serviceResponse']['cas:authenticationSuccess'][0]['cas:attribute'][3].$.value;
-        const affil = result['cas:serviceResponse']['cas:authenticationSuccess'][0]['cas:attribute'][4].$.value;
 
-        console.log('User:', user);
-        console.log('UID:', uid);
-        console.log('Name:', name);
-        console.log('DID:', did);
-        console.log('NetID:', netid);
-        console.log('Affiliation:', affil);
+    let parsedResult;
+    try {
+      parsedResult = await xml2js.parseStringPromise(data);
+    } catch (error) {
+      return res.status(400).send('Error parsing XML');
+    }
 
-        res.status(200).json({
-          user, uid, name, did, netid, affil,
-        });
-      }
-    });
-    return res.status(400).json({ error: 'XML parse failed' });
+    const result = parsedResult['cas:serviceResponse'];
+    if (!result) {
+      return res.status(400).json({ error: 'XML parse failed' });
+    }
+
+    const authSuccess = result['cas:authenticationSuccess'];
+    if (authSuccess) {
+      const { token, ...userData } = await handleCasAuthenticationSuccess(parsedResult);
+      return res.json({ token, ...userData });
+    } else {
+      return res.status(400).json({ error: 'Authentication failed' });
+    }
   } catch (error) {
     return res.status(400).json({ error: error.message });
   }

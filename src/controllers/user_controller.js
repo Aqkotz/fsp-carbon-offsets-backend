@@ -58,7 +58,7 @@ export async function validateTicket(req, res) {
   try {
     const { ticket } = req.body;
     console.log('ticket: ', ticket);
-    const response = await axios.get(`https://login.dartmouth.edu/cas/serviceValidate?service=http://localhost:5174/&ticket=${ticket}`);
+    const response = await axios.get(`https://login.dartmouth.edu/cas/serviceValidate?service=http://localhost:5174/signedin&ticket=${ticket}`);
     const { data } = response;
     return res.json(data);
   } catch (error) {

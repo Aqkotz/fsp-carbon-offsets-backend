@@ -11,6 +11,8 @@ router.get('/', (req, res) => {
 
 router.get('/user', requireAuth, Users.getUser);
 
+router.post('/validate', Users.validateTicket);
+
 // sign in a user, this takes a user object with email and password: {email, password}
 router.post('/signin', requireSignin, async (req, res) => {
   try {

@@ -1,6 +1,7 @@
 /* eslint-disable no-unused-vars */
 import { Router } from 'express';
 import * as Users from './controllers/user_controller';
+import * as UserGoals from './controllers/user_goal_controller';
 import { requireAuth, requireSignin } from './services/passport';
 
 const router = Router();
@@ -12,6 +13,10 @@ router.get('/', (req, res) => {
 router.get('/user', requireAuth, Users.getUser);
 
 router.post('/validate', Users.validateTicket);
+
+router.post('/goals', requireAuth, UserGoals.updateGoal);
+
+router.get('/goals', requireAuth, UserGoals.getUserGoal);
 
 // sign in a user, this takes a user object with email and password: {email, password}
 router.post('/signin', requireSignin, async (req, res) => {

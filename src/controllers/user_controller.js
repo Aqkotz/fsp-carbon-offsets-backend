@@ -28,27 +28,24 @@ export const signin = (user) => {
 };
 
 export async function createUser({
-  email, password, username, firstName, lastName,
+  netid, password, name,
 }) {
   // See if a user with the given email exists
-  const existingUser = await User.findOne({ email });
+  const existingUser = await User.findOne({ netid });
   if (existingUser) {
     // If a user with email does exist, return an error
-    throw new Error('Email is in use');
+    throw new Error('Netid is in use');
   }
 
   const user = new User();
 
-  user.email = email;
-  user.username = username;
+  user.netid = netid;
   user.password = password;
-  user.firstName = firstName;
-  user.lastName = lastName;
+  user.name = name;
 
   try {
     const newUser = await user.save();
     const token = tokenForUser(newUser);
-    console.log('savedUser', newUser);
     return ({ newUser, token });
   } catch (error) {
     throw new Error(`create user error: ${error}`);
@@ -56,46 +53,27 @@ export async function createUser({
 }
 
 async function handleCasAuthenticationSuccess(result) {
-  const user = result['cas:serviceResponse']['cas:authenticationSuccess'][0]['cas:user'][0];
   const uid = result['cas:serviceResponse']['cas:authenticationSuccess'][0]['cas:attribute'][0].$.value;
   const name = result['cas:serviceResponse']['cas:authenticationSuccess'][0]['cas:attribute'][1].$.value;
-  const did = result['cas:serviceResponse']['cas:authenticationSuccess'][0]['cas:attribute'][2].$.value;
   const netid = result['cas:serviceResponse']['cas:authenticationSuccess'][0]['cas:attribute'][3].$.value;
-  const affil = result['cas:serviceResponse']['cas:authenticationSuccess'][0]['cas:attribute'][4].$.value;
 
-  console.log('attempting signin...');
-  let token = signin({ email: user, password: uid });
-  if (!token) {
-    console.log('attempting signup...');
+  const existingUser = await User.findOne({ netid });
+  if (existingUser) {
+    const token = signin({ netid, password: uid });
+    return { token, user: existingUser };
+  } else {
     try {
-      const u = {
-        email: user,
+      const user = {
+        netid,
         password: uid,
-        username: netid,
-        firstName: name,
-        lastName: name,
+        name,
       };
-      const newUser = await createUser(u);
-      token = newUser.token;
-      console.log(`signed up user: ${newUser}`);
+      const { token, newUser } = await createUser(user);
+      return { token, newUser };
     } catch (error) {
       throw new Error(error.toString());
     }
-  } else {
-    console.log(`signed in user: ${user}`);
   }
-
-  return {
-    token,
-    user: {
-      user,
-      uid,
-      name,
-      did,
-      netid,
-      affil,
-    },
-  };
 }
 
 export async function validateTicket(req, res) {
@@ -131,7 +109,6 @@ export async function validateTicket(req, res) {
   }
 }
 
-// encodes a new token for a user object
 function tokenForUser(user) {
   const timestamp = new Date().getTime();
   return jwt.encode({ sub: user.id, iat: timestamp }, process.env.AUTH_SECRET);

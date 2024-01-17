@@ -1,8 +1,9 @@
 import mongoose, { Schema } from 'mongoose';
 
 const UserGoalSchema = new Schema({
-  name: { type: String },
   description: { type: String },
+  completedToday: { type: Boolean, default: false },
+  streak: { type: Number, default: 0 },
 }, {
   toObject: { virtuals: true },
   toJSON: { virtuals: true },

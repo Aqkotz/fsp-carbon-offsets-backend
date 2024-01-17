@@ -2,13 +2,11 @@ import mongoose, { Schema } from 'mongoose';
 import bcrypt from 'bcryptjs';
 
 const UserSchema = new Schema({
-  username: { type: String, unique: true },
+  netid: { type: String, unique: true },
   password: { type: String },
-  email: { type: String, unique: true, lowercase: true },
   role: { type: String, default: 'user' },
-  goal: { type: Schema.Types.ObjectId, ref: 'UserGoal' },
-  firstName: { type: String },
-  lastName: { type: String },
+  goals: [{ type: Schema.Types.ObjectId, ref: 'UserGoal' }],
+  name: { type: String },
 }, {
   toObject: { virtuals: true },
   toJSON: { virtuals: true },

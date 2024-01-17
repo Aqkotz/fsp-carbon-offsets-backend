@@ -5,7 +5,7 @@ const UserSchema = new Schema({
   netid: { type: String, unique: true },
   password: { type: String },
   role: { type: String, default: 'user' },
-  goal: { type: Schema.Types.ObjectId, ref: 'UserGoal' },
+  goals: [{ type: Schema.Types.ObjectId, ref: 'UserGoal' }],
   name: { type: String },
 }, {
   toObject: { virtuals: true },

@@ -1,20 +1,35 @@
-/* eslint-disable import/prefer-default-export */
 import UserGoal from '../models/user_goal_model';
 import User from '../models/user_model';
 
+export const updateGoal = async (req, res) => {
+  try {
+    const { goal } = req.body;
+    const user = await User.findById(req.user._id);
+    user.goals.push(new UserGoal({ description: goal }));
+    await user.save();
+    return res.json(user);
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+};
+
 export const getUserGoals = async (req, res) => {
   try {
-    const userGoals = await UserGoal.find({});
+    const user = await User.findById(req.user._id).populate('goals');
+    const userGoals = user.goals;
     return res.json(userGoals);
   } catch (error) {
     return res.status(400).json({ error: error.message });
   }
 };
 
-export const updateGoal = async (req, res) => {
+export const setGoal = async (req, res) => {
   try {
     const { goal } = req.body;
     const user = await User.findById(req.user._id);
+    if (user.goals.length >= 3) {
+      return res.status(400).json({ error: 'User already has three goals.' });
+    }
     user.goal = new UserGoal({ description: goal });
     await user.save();
     return res.json(user);
@@ -23,12 +38,46 @@ export const updateGoal = async (req, res) => {
   }
 };
 
-export const getUserGoal = async (req, res) => {
+export const removeGoal = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).populate('goal');
-    const userGoal = user.goal;
-    return res.json(userGoal);
+    const { goal } = req.body;
+    const user = await User.findById(req.user._id);
+    user.goals = user.goals.filter((userGoal) => { return userGoal.description !== goal; });
+    await user.save();
+    return res.json(user);
   } catch (error) {
     return res.status(400).json({ error: error.message });
+  }
+};
+
+export const completeGoal = async (req, res) => {
+  try {
+    const { goal } = req.body;
+    const user = await User.findById(req.user._id);
+    const userGoal = user.goals.find((g) => { return g.description === goal; });
+    userGoal.completedToday = true;
+    await user.save();
+    return res.json(user);
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+};
+
+export const updateStreaks = async () => {
+  try {
+    const users = await User.find({});
+    users.forEach((user) => {
+      user.goals.forEach((goal) => {
+        if (goal.completedToday) {
+          goal.streak += 1;
+          goal.completedToday = false;
+        } else {
+          goal.streak = 0;
+        }
+      });
+      user.save();
+    });
+  } catch (error) {
+    console.log(error);
   }
 };

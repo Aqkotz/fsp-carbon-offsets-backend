@@ -82,12 +82,10 @@ async function handleCasAuthenticationSuccess(result) {
 
 export async function validateTicket(req, res) {
   try {
-    const { ticket } = req.body;
-    console.log('ticket: ', ticket);
+    const { ticket, service } = req.body;
 
-    const response = await axios.get(`https://login.dartmouth.edu/cas/serviceValidate?service=http://localhost:5174/signedin&ticket=${ticket}`);
+    const response = await axios.get(`https://login.dartmouth.edu/cas/serviceValidate?service=${service}/signedin&ticket=${ticket}`);
     const { data } = response;
-    console.log('data: ', data);
 
     let parsedResult;
     try {
@@ -100,8 +98,6 @@ export async function validateTicket(req, res) {
     if (!result) {
       return res.status(400).json({ error: 'XML parse failed' });
     }
-
-    console.log('result: ', result);
 
     const authSuccess = result['cas:authenticationSuccess'];
     if (authSuccess) {

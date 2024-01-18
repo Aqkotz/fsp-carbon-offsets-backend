@@ -30,7 +30,7 @@ export const setGoal = async (req, res) => {
     if (user.goals.length >= 3) {
       return res.status(400).json({ error: 'User already has three goals.' });
     }
-    user.goal.push(new UserGoal({ description }));
+    user.goals.push(new UserGoal({ description }));
     await user.save();
     return res.json(user);
   } catch (error) {

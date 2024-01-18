@@ -25,12 +25,12 @@ export const getUserGoals = async (req, res) => {
 
 export const setGoal = async (req, res) => {
   try {
-    const { goal } = req.body;
+    const { description } = req.body;
     const user = await User.findById(req.user._id);
     if (user.goals.length >= 3) {
       return res.status(400).json({ error: 'User already has three goals.' });
     }
-    user.goal = new UserGoal({ description: goal });
+    user.goal.push(new UserGoal({ description }));
     await user.save();
     return res.json(user);
   } catch (error) {

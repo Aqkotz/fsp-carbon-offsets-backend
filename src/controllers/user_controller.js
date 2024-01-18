@@ -30,10 +30,10 @@ export const signin = (user) => {
 export async function createUser({
   netid, password, name,
 }) {
-  // See if a user with the given email exists
+  // See if a user with the given netid exists
   const existingUser = await User.findOne({ netid });
   if (existingUser) {
-    // If a user with email does exist, return an error
+    // If a user with netid does exist, return an error
     throw new Error('Netid is in use');
   }
 

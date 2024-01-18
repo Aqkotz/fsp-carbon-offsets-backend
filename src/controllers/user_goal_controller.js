@@ -38,7 +38,7 @@ export const setGoal = async (req, res) => {
   }
 };
 
-export const removeGoal = async (req, res) => {
+export const deleteGoal = async (req, res) => {
   try {
     const { goal } = req.body;
     const user = await User.findById(req.user._id);

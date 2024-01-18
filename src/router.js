@@ -21,6 +21,10 @@ router.post('/goals', requireAuth, UserGoals.updateGoal);
 
 router.get('/goals', requireAuth, UserGoals.getUserGoals);
 
+router.delete('/goals', requireAuth, UserGoals.deleteGoal);
+
+router.post('/goals/complete', requireAuth, UserGoals.completeGoal);
+
 // sign in a user, this takes a user object with email and password: {email, password}
 router.post('/signin', requireSignin, async (req, res) => {
   try {

@@ -97,6 +97,8 @@ export async function validateTicket(req, res) {
       return res.status(400).json({ error: 'XML parse failed' });
     }
 
+    console.log('result: ', result);
+
     const authSuccess = result['cas:authenticationSuccess'];
     if (authSuccess) {
       const { token, ...userData } = await handleCasAuthenticationSuccess(parsedResult);

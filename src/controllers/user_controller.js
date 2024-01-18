@@ -68,9 +68,12 @@ async function handleCasAuthenticationSuccess(result) {
         password: uid,
         name,
       };
+      console.log('user: ', user);
       const { token, newUser } = await createUser(user);
+      console.log('newUser: ', newUser);
       return { token, newUser };
     } catch (error) {
+      console.log('error: ', error);
       throw new Error(error.toString());
     }
   }

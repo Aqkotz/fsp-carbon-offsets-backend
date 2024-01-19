@@ -45,14 +45,18 @@ export const deleteGoal = async (req, res) => {
     const { id } = req.params;
     const user = await User.findById(req.user._id).populate('goals');
     const goal = await UserGoal.findById(id);
+    console.log(goal);
 
     if (!goal) {
       return res.status(404).json({ error: 'Goal not found' });
     }
 
     user.goals.pull(goal);
+    console.log(user.goals);
     await goal.remove();
+    console.log('A');
     await user.save();
+    console.log(user);
 
     return res.json(user.goals);
   } catch (error) {

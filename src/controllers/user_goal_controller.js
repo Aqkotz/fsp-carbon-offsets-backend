@@ -55,7 +55,7 @@ export const deleteGoal = async (req, res) => {
 
 export const completeGoal = async (req, res) => {
   try {
-    const { id } = req.body;
+    const { id } = req.params;
     const user = await User.findById(req.user._id);
     const goal = await UserGoal.findById(id);
     if (user.goals.indexOf(goal) === -1) {

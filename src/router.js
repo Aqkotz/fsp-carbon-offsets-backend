@@ -23,7 +23,7 @@ router.get('/goals', requireAuth, UserGoals.getUserGoals);
 
 router.delete('/goals/:id', requireAuth, UserGoals.deleteGoal);
 
-router.post('/goals/complete', requireAuth, UserGoals.completeGoal);
+router.post('/goals/complete/:id', requireAuth, UserGoals.completeGoal);
 
 router.post('/goals/fail/:id', requireAuth, UserGoals.failGoal);
 

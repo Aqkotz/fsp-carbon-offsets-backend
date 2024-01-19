@@ -26,18 +26,13 @@ export const getUserGoals = async (req, res) => {
 export const setGoal = async (req, res) => {
   try {
     const { description } = req.body;
-    console.log(description);
     const user = await User.findById(req.user._id);
-    console.log(user);
-    // if (user.goals.length >= 3) {
-    //   return res.status(400).json({ error: 'User already has three goals.' });
-    // }
-    // console.log(user);
+    if (user.goals.length >= 3) {
+      return res.status(400).json({ error: 'User already has three goals.' });
+    }
     const goal = new UserGoal({ description });
-    console.log(goal);
     await goal.save();
     user.goals.push(goal);
-    console.log(user);
     await user.save();
     return res.json(user.goals);
   } catch (error) {
@@ -47,9 +42,10 @@ export const setGoal = async (req, res) => {
 
 export const deleteGoal = async (req, res) => {
   try {
-    const { goal } = req.body;
+    const { id } = req.body;
     const user = await User.findById(req.user._id);
-    user.goals = user.goals.filter((userGoal) => { return userGoal.description !== goal; });
+    const goal = await UserGoal.findById(id);
+    user.goals.pull(goal);
     await user.save();
     return res.json(user);
   } catch (error) {
@@ -59,11 +55,17 @@ export const deleteGoal = async (req, res) => {
 
 export const completeGoal = async (req, res) => {
   try {
-    const { goal } = req.body;
+    const { id } = req.body;
     const user = await User.findById(req.user._id);
-    const userGoal = user.goals.find((g) => { return g.description === goal; });
-    userGoal.completedToday = true;
-    await user.save();
+    const goal = await UserGoal.findById(id);
+    if (user.goals.indexOf(goal) === -1) {
+      return res.status(400).json({ error: 'Goal not found.' });
+    }
+    if (goal.completedToday) {
+      return res.status(400).json({ error: 'Goal already completed today.' });
+    }
+    goal.completedToday = true;
+    await goal.save();
     return res.json(user);
   } catch (error) {
     return res.status(400).json({ error: error.message });

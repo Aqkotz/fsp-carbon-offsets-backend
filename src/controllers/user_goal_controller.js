@@ -52,11 +52,16 @@ export const deleteGoal = async (req, res) => {
       return res.status(404).json({ error: 'Goal not found' });
     }
 
+    console.log('A');
+
     if (goal.user.toString() !== req.user._id.toString()) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
+    console.log('B');
+
     user.goals.pull(goal);
+    await goal.remove();
     await user.save();
 
     return res.json(user.goals);

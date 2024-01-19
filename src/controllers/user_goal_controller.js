@@ -29,14 +29,14 @@ export const setGoal = async (req, res) => {
     console.log(description);
     const user = await User.findById(req.user._id);
     console.log(user);
-    if (user.goals.length >= 3) {
-      return res.status(400).json({ error: 'User already has three goals.' });
-    }
-    console.log(user);
+    // if (user.goals.length >= 3) {
+    //   return res.status(400).json({ error: 'User already has three goals.' });
+    // }
+    // console.log(user);
     const goal = new UserGoal({ description });
     console.log(goal);
-    goal.save();
-    user.goals.push(new UserGoal({ description }));
+    await goal.save();
+    user.goals.push(goal);
     console.log(user);
     await user.save();
     return res.json(user.goals);

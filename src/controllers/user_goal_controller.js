@@ -43,6 +43,7 @@ export const setGoal = async (req, res) => {
 export const deleteGoal = async (req, res) => {
   try {
     const { id } = req.body;
+    console.log(id);
     const user = await User.findById(req.user._id).populate('goals');
     const goal = await UserGoal.findById(id);
     user.goals.pull(goal);

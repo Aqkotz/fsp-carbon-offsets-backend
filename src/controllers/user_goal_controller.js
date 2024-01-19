@@ -28,6 +28,7 @@ export const setGoal = async (req, res) => {
     const { description } = req.body;
     console.log(description);
     const user = await User.findById(req.user._id);
+    console.log(user);
     if (user.goals.length >= 3) {
       return res.status(400).json({ error: 'User already has three goals.' });
     }

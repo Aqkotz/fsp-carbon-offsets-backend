@@ -33,6 +33,9 @@ export const setGoal = async (req, res) => {
       return res.status(400).json({ error: 'User already has three goals.' });
     }
     console.log(user);
+    const goal = new UserGoal({ description });
+    console.log(goal);
+    goal.save();
     user.goals.push(new UserGoal({ description }));
     console.log(user);
     await user.save();

@@ -43,11 +43,11 @@ export const setGoal = async (req, res) => {
 export const deleteGoal = async (req, res) => {
   try {
     const { id } = req.body;
-    const user = await User.findById(req.user._id);
+    const user = await User.findById(req.user._id).populate('goals');
     const goal = await UserGoal.findById(id);
     user.goals.pull(goal);
     await user.save();
-    return res.json(user);
+    return res.json(user.goals);
   } catch (error) {
     return res.status(400).json({ error: error.message });
   }
@@ -56,7 +56,7 @@ export const deleteGoal = async (req, res) => {
 export const completeGoal = async (req, res) => {
   try {
     const { id } = req.params;
-    const user = await User.findById(req.user._id);
+    const user = await User.findById(req.user._id).populate('goals');
     console.log(id);
     const goal = await UserGoal.findById(id);
     console.log(goal);
@@ -68,7 +68,7 @@ export const completeGoal = async (req, res) => {
     }
     goal.completedToday = true;
     await goal.save();
-    return res.json(user);
+    return res.json(user.goals);
   } catch (error) {
     return res.status(400).json({ error: error.message });
   }
@@ -96,14 +96,14 @@ export const updateStreaks = async () => {
 export const failGoal = async (req, res) => {
   try {
     const { id } = req.params;
-    const user = await User.findById(req.user._id);
+    const user = await User.findById(req.user._id).populate('goals');
     const goal = await UserGoal.findById(id);
     if (user.goals.indexOf(goal) === -1) {
       return res.status(400).json({ error: 'Goal not found.' });
     }
     goal.failed = true;
     await goal.save();
-    return res.json(goal);
+    return res.json(user.goals);
   } catch (error) {
     return res.status(400).json({ error: error.message });
   }

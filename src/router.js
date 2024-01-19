@@ -21,10 +21,10 @@ router.post('/goals', requireAuth, UserGoals.setGoal);
 
 router.get('/goals', requireAuth, UserGoals.getUserGoals);
 
-router.delete('/goals:id', requireAuth, UserGoals.deleteGoal);
+router.delete('/goals/:id', requireAuth, UserGoals.deleteGoal);
 
 router.post('/goals/complete', requireAuth, UserGoals.completeGoal);
 
-router.post('/goals/fail:id', requireAuth, UserGoals.failGoal);
+router.post('/goals/fail/:id', requireAuth, UserGoals.failGoal);
 
 export default router;

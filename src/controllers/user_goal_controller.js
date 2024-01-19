@@ -57,7 +57,9 @@ export const completeGoal = async (req, res) => {
   try {
     const { id } = req.params;
     const user = await User.findById(req.user._id);
+    console.log(id);
     const goal = await UserGoal.findById(id);
+    console.log(goal);
     if (user.goals.indexOf(goal) === -1) {
       return res.status(400).json({ error: 'Goal not found.' });
     }

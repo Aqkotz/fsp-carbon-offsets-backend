@@ -4,6 +4,7 @@ const UserGoalSchema = new Schema({
   description: { type: String },
   completedToday: { type: Boolean, default: false },
   streak: { type: Number, default: 0 },
+  failed: { type: Boolean, default: false },
 }, {
   toObject: { virtuals: true },
   toJSON: { virtuals: true },

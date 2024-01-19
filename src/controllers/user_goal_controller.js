@@ -92,3 +92,19 @@ export const updateStreaks = async () => {
     console.log(error);
   }
 };
+
+export const failGoal = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findById(req.user._id);
+    const goal = await UserGoal.findById(id);
+    if (user.goals.indexOf(goal) === -1) {
+      return res.status(400).json({ error: 'Goal not found.' });
+    }
+    goal.failed = true;
+    await goal.save();
+    return res.json(goal);
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+};

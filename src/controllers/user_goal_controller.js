@@ -43,7 +43,7 @@ export const setGoal = async (req, res) => {
 export const deleteGoal = async (req, res) => {
   try {
     const { id } = req.params;
-    const user = await User.findById(req.user._id).populate('goals');
+    const user = await User.findById(req.user._id);
     const goal = await UserGoal.findById(id);
     console.log(goal);
 
@@ -53,7 +53,7 @@ export const deleteGoal = async (req, res) => {
 
     user.goals.pull(goal);
     console.log(user.goals);
-    await goal.remove();
+    await UserGoal.deleteOne({ _id: id });
     console.log('A');
     await user.save();
     console.log(user);

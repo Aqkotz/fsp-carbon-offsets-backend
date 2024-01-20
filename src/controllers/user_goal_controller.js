@@ -62,22 +62,19 @@ export const deleteGoal = async (req, res) => {
 
 export const completeGoal = async (req, res) => {
   try {
-    console.log('A');
     const { id } = req.params;
     const user = await User.findById(req.user._id);
-    console.log(id);
     const goal = await UserGoal.findById(id);
-    console.log(goal);
     if (user.goals.indexOf(goal.id) === -1) {
-      console.log('B');
       return res.status(400).json({ error: 'Goal not found.' });
     }
     if (goal.completedToday) {
       return res.status(400).json({ error: 'Goal already completed today.' });
     }
     goal.completedToday = true;
+    goal.failed = false;
     await goal.save();
-    return res.json(user.goals);
+    return res.json(user.populate('goals').goals);
   } catch (error) {
     return res.status(400).json({ error: error.message });
   }
@@ -105,14 +102,15 @@ export const updateStreaks = async () => {
 export const failGoal = async (req, res) => {
   try {
     const { id } = req.params;
-    const user = await User.findById(req.user._id).populate('goals');
+    const user = await User.findById(req.user._id);
     const goal = await UserGoal.findById(id);
-    if (user.goals.indexOf(goal) === -1) {
+    if (user.goals.indexOf(goal.id) === -1) {
       return res.status(400).json({ error: 'Goal not found.' });
     }
     goal.failed = true;
+    goal.completedToday = false;
     await goal.save();
-    return res.json(user.goals);
+    return res.json(user.populate('goals').goals);
   } catch (error) {
     return res.status(400).json({ error: error.message });
   }

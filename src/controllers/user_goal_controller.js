@@ -45,20 +45,16 @@ export const deleteGoal = async (req, res) => {
     const { id } = req.params;
     const user = await User.findById(req.user._id);
     const goal = await UserGoal.findById(id);
-    console.log(goal);
 
     if (!goal) {
       return res.status(404).json({ error: 'Goal not found' });
     }
 
     user.goals.pull(goal);
-    console.log(user.goals);
     await UserGoal.deleteOne({ _id: id });
-    console.log('A');
     await user.save();
-    console.log(user);
 
-    return res.json(user.goals);
+    return res.json((await user.populate('goals')).goals);
   } catch (error) {
     return res.status(400).json({ error: error.message });
   }
@@ -66,6 +62,7 @@ export const deleteGoal = async (req, res) => {
 
 export const completeGoal = async (req, res) => {
   try {
+    console.log('A');
     const { id } = req.params;
     const user = await User.findById(req.user._id).populate('goals');
     console.log(id);

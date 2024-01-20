@@ -82,6 +82,7 @@ export const completeGoal = async (req, res) => {
 
 export const updateStreaks = async () => {
   try {
+    console.log('Updating streaks...');
     const users = await User.find({});
     users.forEach((user) => {
       user.goals.forEach((goal) => {

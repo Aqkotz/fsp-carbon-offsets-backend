@@ -60,6 +60,7 @@ async function handleCasAuthenticationSuccess(result) {
   const existingUser = await User.findOne({ netid });
   if (existingUser) {
     const token = signin({ netid, password: uid });
+    console.log('existingUser: ', existingUser);
     return { token, user: existingUser };
   } else {
     try {

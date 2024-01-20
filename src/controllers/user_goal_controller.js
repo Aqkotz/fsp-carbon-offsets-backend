@@ -64,11 +64,12 @@ export const completeGoal = async (req, res) => {
   try {
     console.log('A');
     const { id } = req.params;
-    const user = await User.findById(req.user._id).populate('goals');
+    const user = await User.findById(req.user._id);
     console.log(id);
     const goal = await UserGoal.findById(id);
     console.log(goal);
-    if (user.goals.indexOf(goal) === -1) {
+    if (user.goals.indexOf(goal.id) === -1) {
+      console.log('B');
       return res.status(400).json({ error: 'Goal not found.' });
     }
     if (goal.completedToday) {

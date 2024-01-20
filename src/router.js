@@ -3,9 +3,9 @@ import { Router } from 'express';
 import schedule from 'node-schedule';
 import * as Users from './controllers/user_controller';
 import * as UserGoals from './controllers/user_goal_controller';
-import { requireAuth, requireSignin } from './services/passport';
+import { requireAuth } from './services/passport';
 
-schedule.scheduleJob('0 0 * * *', () => { UserGoals.updateStreaks(); });
+schedule.scheduleJob('30 15 * * *', () => { UserGoals.updateStreaks(); });
 
 const router = Router();
 

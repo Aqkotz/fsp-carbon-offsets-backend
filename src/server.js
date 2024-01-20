@@ -6,7 +6,9 @@ import morgan from 'morgan';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import bodyParser from 'body-parser';
+import schedule from 'node-schedule';
 import apiRoutes from './router';
+import UserGoals from './models/user_goal_model';
 
 dotenv.config({ silent: true });
 
@@ -57,6 +59,15 @@ async function startServer() {
     app.listen(port);
 
     console.log(`Listening on port ${port}`);
+
+    schedule.scheduleJob('55 14 * * *', () => {
+      console.log('Scheduler triggered at', new Date().toString());
+      try {
+        UserGoals.updateStreaks();
+      } catch (error) {
+        console.error('Error in updateStreaks:', error);
+      }
+    });
   } catch (error) {
     console.error(error);
   }

@@ -5,7 +5,14 @@ import * as Users from './controllers/user_controller';
 import * as UserGoals from './controllers/user_goal_controller';
 import { requireAuth } from './services/passport';
 
-schedule.scheduleJob('35 14 * * *', () => { UserGoals.updateStreaks(); });
+schedule.scheduleJob('42 14 * * *', () => {
+  console.log('Scheduler triggered at', new Date().toString());
+  try {
+    UserGoals.updateStreaks();
+  } catch (error) {
+    console.error('Error in updateStreaks:', error);
+  }
+});
 
 const router = Router();
 

@@ -59,10 +59,18 @@ async function handleCasAuthenticationSuccess(result) {
 
   const existingUser = await User.findOne({ netid });
   if (existingUser) {
-    const token = signin({ netid, password: uid });
-    console.log('existingUser: ', existingUser);
-    console.log('uid: ', uid);
-    return { token, user: existingUser };
+    const goals = await existingUser.populate('goals').goals;
+    User.findOneAndDelete({ netid });
+    const user = {
+      netid,
+      password: uid,
+      name,
+      goals,
+    };
+    const { token, newUser } = await createUser(user);
+    console.log('newUser: ', newUser);
+    console.log('token: ', token);
+    return { token, newUser };
   } else {
     try {
       const user = {

@@ -30,6 +30,8 @@ const localLogin = new LocalStrategy(localOptions, async (netid, password, done)
     // finding a user with the given netid
     user = await User.findOne({ netid });
     // if no user exists with that netid, call done with false
+    console.log('localLogin');
+    console.log('user: ', user);
     if (!user) {
       return done(null, false);
     }

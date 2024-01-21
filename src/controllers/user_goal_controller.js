@@ -68,12 +68,10 @@ export const completeGoal = async (req, res) => {
     if (user.goals.indexOf(goal.id) === -1) {
       return res.status(400).json({ error: 'Goal not found.' });
     }
-    if (goal.completedToday) {
-      return res.status(400).json({ error: 'Goal already completed today.' });
-    }
     goal.completedToday = true;
     goal.failed = false;
     await goal.save();
+    console.log(user.populate('goals').goals);
     return res.json(user.populate('goals').goals);
   } catch (error) {
     return res.status(400).json({ error: error.message });
@@ -92,8 +90,8 @@ export const updateStreaks = async () => {
         } else {
           goal.streak = 0;
         }
+        goal.save();
       });
-      user.save();
     });
   } catch (error) {
     console.log(error);

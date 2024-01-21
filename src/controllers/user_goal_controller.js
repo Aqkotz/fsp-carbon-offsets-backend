@@ -34,7 +34,7 @@ export const setGoal = async (req, res) => {
     await goal.save();
     user.goals.push(goal);
     await user.save();
-    return res.json(user.populate('goals').goals);
+    return res.json(await user.populate('goals').goals);
   } catch (error) {
     return res.status(400).json({ error: error.message });
   }

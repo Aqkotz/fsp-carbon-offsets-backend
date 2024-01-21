@@ -62,8 +62,7 @@ async function handleCasAuthenticationSuccess(result) {
   const existingUser = await User.findOne({ netid });
   if (existingUser) {
     const { goals } = existingUser;
-    User.findOneAndDelete({ netid });
-    console.log(User.findOne({ netid }));
+    await User.findOneAndDelete({ netid });
     console.log('goals: ', goals);
     const user = {
       netid,

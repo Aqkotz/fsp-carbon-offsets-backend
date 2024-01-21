@@ -28,11 +28,12 @@ export const signin = (user) => {
 };
 
 export async function createUser({
-  netid, password, name,
+  netid, password, name, goals,
 }) {
   // See if a user with the given netid exists
   const existingUser = await User.findOne({ netid });
   if (existingUser) {
+    console.log('existing user!!!');
     // If a user with netid does exist, return an error
     throw new Error('Netid is in use');
   }
@@ -42,6 +43,7 @@ export async function createUser({
   user.netid = netid;
   user.password = password;
   user.name = name;
+  user.goals = goals;
 
   try {
     const newUser = await user.save();
@@ -59,7 +61,7 @@ async function handleCasAuthenticationSuccess(result) {
 
   const existingUser = await User.findOne({ netid });
   if (existingUser) {
-    const goals = await existingUser.goals;
+    const { goals } = existingUser;
     User.findOneAndDelete({ netid });
     console.log('goals: ', goals);
     const user = {
@@ -78,6 +80,7 @@ async function handleCasAuthenticationSuccess(result) {
         netid,
         password: uid,
         name,
+        goals: [],
       };
       console.log('user: ', user);
       const { token, newUser } = await createUser(user);

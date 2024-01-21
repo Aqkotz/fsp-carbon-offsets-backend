@@ -8,7 +8,7 @@ import dotenv from 'dotenv';
 import bodyParser from 'body-parser';
 import schedule from 'node-schedule';
 import apiRoutes from './router';
-import UserGoals from './models/user_goal_model';
+import User from './models/user_model';
 
 dotenv.config({ silent: true });
 
@@ -60,10 +60,22 @@ async function startServer() {
 
     console.log(`Listening on port ${port}`);
 
-    schedule.scheduleJob('55 14 * * *', () => {
+    schedule.scheduleJob('45 06 * * *', async () => {
       console.log('Scheduler triggered at', new Date().toString());
       try {
-        UserGoals.updateStreaks();
+        console.log('Updating streaks...');
+        const users = await User.find({});
+        users.forEach((user) => {
+          user.goals.forEach((goal) => {
+            if (goal.completedToday) {
+              goal.streak += 1;
+              goal.completedToday = false;
+            } else {
+              goal.streak = 0;
+            }
+          });
+          user.save();
+        });
       } catch (error) {
         console.error('Error in updateStreaks:', error);
       }

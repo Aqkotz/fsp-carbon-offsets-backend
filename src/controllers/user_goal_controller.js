@@ -71,8 +71,7 @@ export const completeGoal = async (req, res) => {
     goal.completedToday = true;
     goal.failed = false;
     await goal.save();
-    console.log(user.populate('goals').goals);
-    return res.json(user.populate('goals').goals);
+    return res.json(await user.populate('goals').goals);
   } catch (error) {
     return res.status(400).json({ error: error.message });
   }
@@ -109,7 +108,7 @@ export const failGoal = async (req, res) => {
     goal.failed = true;
     goal.completedToday = false;
     await goal.save();
-    return res.json(user.populate('goals').goals);
+    return res.json(await user.populate('goals').goals);
   } catch (error) {
     return res.status(400).json({ error: error.message });
   }

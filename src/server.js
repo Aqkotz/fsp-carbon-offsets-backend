@@ -60,12 +60,13 @@ async function startServer() {
 
     console.log(`Listening on port ${port}`);
 
-    schedule.scheduleJob('55 06 * * *', async () => {
+    schedule.scheduleJob('35 19 * * *', async () => {
       console.log('Scheduler triggered at', new Date().toString());
       try {
         console.log('Updating streaks...');
         const users = await User.find({});
         users.forEach((user) => {
+          user.populate('goals');
           user.goals.forEach((goal) => {
             if (goal.completedToday) {
               goal.streak += 1;

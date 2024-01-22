@@ -60,7 +60,7 @@ async function startServer() {
 
     console.log(`Listening on port ${port}`);
 
-    schedule.scheduleJob('23 02 * * *', async () => {
+    schedule.scheduleJob('27 02 * * *', async () => {
       console.log('Scheduler triggered at', new Date().toString());
       try {
         console.log('Updating streaks...');

@@ -60,7 +60,7 @@ async function startServer() {
 
     console.log(`Listening on port ${port}`);
 
-    schedule.scheduleJob('40 19 * * *', async () => {
+    schedule.scheduleJob('56 02 * * *', async () => {
       console.log('Scheduler triggered at', new Date().toString());
       try {
         console.log('Updating streaks...');
@@ -74,8 +74,8 @@ async function startServer() {
             } else {
               goal.streak = 0;
             }
+            goal.save();
           });
-          user.save();
         });
       } catch (error) {
         console.error('Error in updateStreaks:', error);

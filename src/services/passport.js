@@ -24,7 +24,7 @@ const jwtOptions = {
 // username/netid + password authentication strategy
 const localLogin = new LocalStrategy(localOptions, async (netid, password, done) => {
   let user;
-  let isMatch;
+  // let isMatch;
 
   try {
     // finding a user with the given netid
@@ -37,9 +37,9 @@ const localLogin = new LocalStrategy(localOptions, async (netid, password, done)
     }
     // otherwise, we compare passwords and see if `password` equal to user.password. these are both hashed passwords
     // isMatch is a boolean that stores the result of this comparison
-    isMatch = await user.comparePassword(password);
+    // isMatch = await user.comparePassword(password);
     // if they don't match, return done with false
-    if (!isMatch) {
+    if (true) {
       return done(null, false);
     } else {
       // if they do match, call done with the user

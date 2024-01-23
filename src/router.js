@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import * as Users from './controllers/user_controller';
 import * as UserGoals from './controllers/user_goal_controller';
-import { requireAuth } from './services/passport';
+import { requireAuth, requireSignin } from './services/passport';
 
 const router = Router();
 
@@ -12,6 +12,8 @@ router.get('/', (req, res) => {
 router.get('/user', requireAuth, Users.getUser);
 
 router.post('/validate', Users.validateTicket);
+
+router.post('/signin', requireSignin, Users.signin);
 
 router.post('/goals', requireAuth, UserGoals.setGoal);
 

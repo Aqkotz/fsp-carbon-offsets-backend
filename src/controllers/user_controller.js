@@ -2,6 +2,7 @@ import jwt from 'jwt-simple';
 import axios from 'axios';
 import xml2js from 'xml2js';
 import User from '../models/user_model';
+import UserGoal from '../models/user_goal_model';
 
 export const getUsers = async (req, res) => {
   try {
@@ -133,18 +134,18 @@ function tokenForUser(user) {
 export const updateStreaks = async () => {
   try {
     console.log('Updating streaks...');
-    const users = await User.find({});
-    users.forEach((user) => {
-      user.populate('goals');
-      user.goals.forEach((goal) => {
-        if (goal.completedToday) {
-          goal.streak += 1;
-          goal.completedToday = false;
-        } else {
-          goal.streak = 0;
-        }
-      });
-      user.save();
+    const goals = await UserGoal.find({});
+    goals.forEach((goal) => {
+      console.log('goal: ', goal);
+      if (goal.completedToday) {
+        goal.streak += 1;
+        goal.completedToday = false;
+        console.log('updating streak for goal: ', goal);
+      } else {
+        goal.streak = 0;
+        console.log('resetting streak for goal: ', goal);
+      }
+      goal.save();
     });
   } catch (error) {
     console.error('Error in updateStreaks:', error);

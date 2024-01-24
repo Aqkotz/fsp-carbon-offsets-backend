@@ -25,4 +25,6 @@ router.post('/goals/complete/:id', requireAuth, UserGoals.completeGoal);
 
 router.post('/goals/fail/:id', requireAuth, UserGoals.failGoal);
 
+router.post('/updatestreaks', Users.updateStreaks);
+
 export default router;

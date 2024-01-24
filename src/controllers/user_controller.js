@@ -129,3 +129,24 @@ function tokenForUser(user) {
   const timestamp = new Date().getTime();
   return jwt.encode({ sub: user.id, iat: timestamp }, process.env.AUTH_SECRET);
 }
+
+export const updateStreaks = async () => {
+  try {
+    console.log('Updating streaks...');
+    const users = await User.find({});
+    users.forEach((user) => {
+      user.populate('goals');
+      user.goals.forEach((goal) => {
+        if (goal.completedToday) {
+          goal.streak += 1;
+          goal.completedToday = false;
+        } else {
+          goal.streak = 0;
+        }
+        goal.save();
+      });
+    });
+  } catch (error) {
+    console.error('Error in updateStreaks:', error);
+  }
+};

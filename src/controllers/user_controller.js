@@ -143,8 +143,8 @@ export const updateStreaks = async () => {
         } else {
           goal.streak = 0;
         }
-        goal.save();
       });
+      user.save();
     });
   } catch (error) {
     console.error('Error in updateStreaks:', error);

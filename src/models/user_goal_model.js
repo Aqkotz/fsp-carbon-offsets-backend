@@ -3,7 +3,7 @@ import mongoose, { Schema } from 'mongoose';
 const UserGoalSchema = new Schema({
   description: { type: String },
   completedToday: { type: Boolean, default: false },
-  streak: { type: Number, default: 0 },
+  streak: [{ type: Boolean }],
   failed: { type: Boolean, default: false },
 }, {
   toObject: { virtuals: true },

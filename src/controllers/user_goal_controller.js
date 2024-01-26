@@ -16,7 +16,10 @@ export const updateGoal = async (req, res) => {
 export const getUserGoals = async (req, res) => {
   try {
     const user = await User.findById(req.user._id).populate('goals');
-    const userGoals = user.goals;
+    const userGoals = user.goals.map((goal) => {
+      goal.streak = goal.streak.slice(-7);
+      return goal;
+    });
     return res.json(userGoals);
   } catch (error) {
     return res.status(400).json({ error: error.message });
@@ -83,12 +86,9 @@ export const updateStreaks = async () => {
     const users = await User.find({});
     users.forEach((user) => {
       user.goals.forEach((goal) => {
-        if (goal.completedToday) {
-          goal.streak += 1;
-          goal.completedToday = false;
-        } else {
-          goal.streak = 0;
-        }
+        goal.streak.push(goal.completedToday);
+        goal.completedToday = false;
+        goal.failed = false;
         goal.save();
       });
     });

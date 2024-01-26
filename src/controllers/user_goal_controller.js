@@ -28,14 +28,12 @@ export const getUserGoals = async (req, res) => {
 
 export const fixStreaks = async (req, res) => {
   try {
-    const users = await User.find({});
-    users.forEach((user) => {
-      user.goals.forEach((goal) => {
-        goal.streak = [];
-        goal.save();
-      });
+    const goals = await UserGoal.find({});
+    goals.forEach((goal) => {
+      goal.streak = [];
+      goal.save();
     });
-    return res.json(users);
+    return res.json(goals);
   } catch (error) {
     return res.status(400).json({ error: error.message });
   }

@@ -137,14 +137,7 @@ export const updateStreaks = async () => {
     const goals = await UserGoal.find({});
     goals.forEach((goal) => {
       console.log('goal: ', goal);
-      if (goal.completedToday) {
-        goal.streak += 1;
-        goal.completedToday = false;
-        console.log('updating streak for goal: ', goal);
-      } else {
-        goal.streak = 0;
-        console.log('resetting streak for goal: ', goal);
-      }
+      goal.streak.push(goal.completedToday);
       goal.save();
     });
   } catch (error) {

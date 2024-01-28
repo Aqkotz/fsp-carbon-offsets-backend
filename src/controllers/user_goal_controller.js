@@ -30,7 +30,8 @@ export const fixStreaks = async (req, res) => {
   try {
     const goals = await UserGoal.find({});
     goals.forEach((goal) => {
-      goal.streak = [];
+      goal.completedToday = false;
+      goal.failed = false;
       goal.save();
     });
     return res.json(goals);

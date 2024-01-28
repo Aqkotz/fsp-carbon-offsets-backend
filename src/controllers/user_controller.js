@@ -131,16 +131,19 @@ function tokenForUser(user) {
   return jwt.encode({ sub: user.id, iat: timestamp }, process.env.AUTH_SECRET);
 }
 
-export const updateStreaks = async () => {
+export const updateStreaks = async (req, res) => {
   try {
     console.log('Updating streaks...');
     const goals = await UserGoal.find({});
     goals.forEach((goal) => {
       console.log('goal: ', goal);
       goal.streak.push(goal.completedToday);
+      goal.completedToday = false;
+      goal.failed = false;
       goal.save();
     });
+    return res.json(goals);
   } catch (error) {
-    console.error('Error in updateStreaks:', error);
+    return res.status(400).json({ error: error.message });
   }
 };

@@ -208,6 +208,7 @@ export async function updateCarbonFootprint(user) {
           },
         });
         console.log(`response for ${stop} to ${stops[index + 1]}: ${response.data.co2e}`);
+        console.log(`distance for ${stop} to ${stops[index + 1]}: ${response.data.distance_km}`);
         return response.data.co2e;
       } catch (error) {
         console.error('Error fetching data for stop:', stop, error);

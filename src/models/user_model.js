@@ -7,6 +7,7 @@ const UserSchema = new Schema({
   role: { type: String, default: 'user' },
   goals: [{ type: Schema.Types.ObjectId, ref: 'UserGoal' }],
   name: { type: String },
+  flightStops: [{ type: String }],
 }, {
   toObject: { virtuals: true },
   toJSON: { virtuals: true },

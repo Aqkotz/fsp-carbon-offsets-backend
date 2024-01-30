@@ -147,3 +147,28 @@ export const updateStreaks = async (req, res) => {
     return res.status(400).json({ error: error.message });
   }
 };
+
+export async function setStops(req, res) {
+  try {
+    const { stops } = req.body;
+    const user = await User.findById(req.user._id);
+    const uniqueStops = [...new Set(stops)].map((stop) => { return stop.toUpperCase(); });
+
+    // Check if stops are unique
+    if (uniqueStops.length !== stops.length) {
+      return res.status(400).json({ error: 'Stops must be unique' });
+    }
+
+    // Check if each stop is exactly three letters long
+    const invalidStops = uniqueStops.filter((stop) => { return stop.length !== 3; });
+    if (invalidStops.length > 0) {
+      return res.status(400).json({ error: 'Each stop must be exactly three letters long' });
+    }
+
+    user.stops = uniqueStops;
+    await user.save();
+    return res.json(user.stops);
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+}

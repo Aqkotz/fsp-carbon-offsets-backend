@@ -29,4 +29,6 @@ router.post('/updatestreaks', Users.updateStreaks);
 
 router.post('/fixstreaks', UserGoals.fixStreaks);
 
+router.post('/stops', requireAuth, Users.setStops);
+
 export default router;

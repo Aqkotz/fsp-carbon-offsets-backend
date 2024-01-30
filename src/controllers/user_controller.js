@@ -167,7 +167,7 @@ export async function setStops(req, res) {
       return res.status(400).json({ error: 'Each stop must be exactly three letters long' });
     }
 
-    user.stops = uniqueStops;
+    user.flightStops = stops;
     await user.save();
     return res.json(user.stops);
   } catch (error) {

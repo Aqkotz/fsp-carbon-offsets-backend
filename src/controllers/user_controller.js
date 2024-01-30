@@ -173,3 +173,12 @@ export async function setStops(req, res) {
     return res.status(400).json({ error: error.message });
   }
 }
+
+export async function getStops(req, res) {
+  try {
+    const user = await User.findById(req.user._id);
+    return res.json(user.stops);
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+}

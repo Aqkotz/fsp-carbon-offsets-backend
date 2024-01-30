@@ -31,4 +31,6 @@ router.post('/fixstreaks', UserGoals.fixStreaks);
 
 router.post('/stops', requireAuth, Users.setStops);
 
+router.get('/stops', requireAuth, Users.getStops);
+
 export default router;

@@ -177,10 +177,8 @@ export async function setStops(req, res) {
 
 export async function getStops(req, res) {
   try {
-    console.log('getStops');
     const user = await User.findById(req.user._id);
-    console.log('stops: ', user.stops);
-    return res.json(user.stops);
+    return res.json(user.flightStops);
   } catch (error) {
     return res.status(400).json({ error: error.message });
   }

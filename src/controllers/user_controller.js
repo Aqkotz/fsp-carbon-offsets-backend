@@ -151,6 +151,7 @@ export const updateStreaks = async (req, res) => {
 export async function setStops(req, res) {
   try {
     const { stops } = req.body;
+    console.log('stops: ', stops);
     const user = await User.findById(req.user._id);
     const uniqueStops = [...new Set(stops)].map((stop) => { return stop.toUpperCase(); });
 

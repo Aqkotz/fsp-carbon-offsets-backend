@@ -26,20 +26,6 @@ export const getUserGoals = async (req, res) => {
   }
 };
 
-export const fixStreaks = async (req, res) => {
-  try {
-    const goals = await UserGoal.find({});
-    goals.forEach((goal) => {
-      goal.completedToday = false;
-      goal.failed = false;
-      goal.save();
-    });
-    return res.json(goals);
-  } catch (error) {
-    return res.status(400).json({ error: error.message });
-  }
-};
-
 export const setGoal = async (req, res) => {
   try {
     const { description } = req.body;
@@ -123,6 +109,18 @@ export const failGoal = async (req, res) => {
     goal.completedToday = false;
     await goal.save();
     return res.json((await user.populate('goals')).goals);
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+};
+
+export const fixStreaks = async (req, res) => {
+  try {
+    const goals = await UserGoal.find({});
+    goals.forEach((goal) => {
+      goal.streak = goal.streak.slice(0, -1);
+    });
+    return res.json(goals);
   } catch (error) {
     return res.status(400).json({ error: error.message });
   }

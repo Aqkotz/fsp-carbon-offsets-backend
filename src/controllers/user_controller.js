@@ -184,3 +184,16 @@ export async function getStops(req, res) {
     return res.status(400).json({ error: error.message });
   }
 }
+
+export async function fixFlights(req, res) {
+  try {
+    const users = await User.find({});
+    users.forEach((user) => {
+      user.flights = ['', 'BER'];
+      user.save();
+    });
+    return res.json(users);
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+}

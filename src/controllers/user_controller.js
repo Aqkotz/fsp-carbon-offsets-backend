@@ -189,6 +189,12 @@ export async function updateCarbonFootprint(user) {
   try {
     const { flightStops } = user;
     const stops = flightStops.map((stop) => { return stop.toUpperCase(); });
+    if (stops.length < 2 || stops[0] === '') {
+      user.carbonFootprint = 0;
+      user.carbonFootprint_isStale = false;
+      await user.save();
+      return user.carbonFootprint;
+    }
     const legs = await Promise.all(stops.map(async (stop, index) => {
       if (index === stops.length - 1) {
         return null;
@@ -207,8 +213,6 @@ export async function updateCarbonFootprint(user) {
             Authorization: `Bearer ${process.env.CLIMATIQ_API_KEY}`,
           },
         });
-        console.log(`response for ${stop} to ${stops[index + 1]}: ${response.data.co2e}`);
-        console.log(`distance for ${stop} to ${stops[index + 1]}: ${response.data.distance_km}`);
         return response.data.co2e;
       } catch (error) {
         console.error('Error fetching data for stop:', stop, error);

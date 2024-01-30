@@ -169,7 +169,7 @@ export async function setStops(req, res) {
 
     user.flightStops = stops;
     await user.save();
-    return res.json(user.stops);
+    return res.json(user.flightStops);
   } catch (error) {
     return res.status(400).json({ error: error.message });
   }

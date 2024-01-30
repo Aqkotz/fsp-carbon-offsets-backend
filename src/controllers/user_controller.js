@@ -2,6 +2,7 @@ import jwt from 'jwt-simple';
 import axios from 'axios';
 import xml2js from 'xml2js';
 import User from '../models/user_model';
+import UserGoal from '../models/user_goal_model';
 
 export const getUsers = async (req, res) => {
   try {
@@ -28,12 +29,13 @@ export const signin = (user) => {
 };
 
 export async function createUser({
-  netid, password, name,
+  netid, password, name, goals,
 }) {
-  // See if a user with the given email exists
+  // See if a user with the given netid exists
   const existingUser = await User.findOne({ netid });
   if (existingUser) {
-    // If a user with email does exist, return an error
+    console.log('existing user!!!');
+    // If a user with netid does exist, return an error
     throw new Error('Netid is in use');
   }
 
@@ -42,6 +44,7 @@ export async function createUser({
   user.netid = netid;
   user.password = password;
   user.name = name;
+  user.goals = goals;
 
   try {
     const newUser = await user.save();
@@ -59,18 +62,34 @@ async function handleCasAuthenticationSuccess(result) {
 
   const existingUser = await User.findOne({ netid });
   if (existingUser) {
-    const token = signin({ netid, password: uid });
-    return { token, user: existingUser };
+    // const { goals } = existingUser;
+    // await User.findOneAndDelete({ netid });
+    // console.log(User.findOne({ netid }));
+    // console.log('goals: ', goals);
+    // const user = {
+    //   netid,
+    //   password: uid,
+    //   name,
+    //   goals,
+    // };
+    // const { token, newUser } = await createUser(user);
+    const token = signin(existingUser);
+    return { token, newUser: existingUser };
   } else {
     try {
       const user = {
         netid,
         password: uid,
         name,
+        goals: [],
       };
+      console.log('user: ', user);
       const { token, newUser } = await createUser(user);
+      console.log('newUser: ', newUser);
+      console.log('token: ', token);
       return { token, newUser };
     } catch (error) {
+      console.log('error: ', error);
       throw new Error(error.toString());
     }
   }
@@ -78,12 +97,10 @@ async function handleCasAuthenticationSuccess(result) {
 
 export async function validateTicket(req, res) {
   try {
-    const { ticket } = req.body;
-    console.log('ticket: ', ticket);
+    const { ticket, service } = req.body;
 
-    const response = await axios.get(`https://login.dartmouth.edu/cas/serviceValidate?service=http://localhost:5174/signedin&ticket=${ticket}`);
+    const response = await axios.get(`https://login.dartmouth.edu/cas/serviceValidate?service=${service}/signedin&ticket=${ticket}`);
     const { data } = response;
-    console.log('data: ', data);
 
     let parsedResult;
     try {
@@ -113,3 +130,20 @@ function tokenForUser(user) {
   const timestamp = new Date().getTime();
   return jwt.encode({ sub: user.id, iat: timestamp }, process.env.AUTH_SECRET);
 }
+
+export const updateStreaks = async (req, res) => {
+  try {
+    console.log('Updating streaks...');
+    const goals = await UserGoal.find({});
+    goals.forEach((goal) => {
+      console.log('goal: ', goal);
+      goal.streak.push(goal.completedToday);
+      goal.completedToday = false;
+      goal.failed = false;
+      goal.save();
+    });
+    return res.json(goals);
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+};

@@ -6,7 +6,9 @@ import morgan from 'morgan';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import bodyParser from 'body-parser';
+import schedule from 'node-schedule';
 import apiRoutes from './router';
+import User from './models/user_model';
 
 dotenv.config({ silent: true });
 
@@ -57,6 +59,28 @@ async function startServer() {
     app.listen(port);
 
     console.log(`Listening on port ${port}`);
+
+    schedule.scheduleJob('27 02 * * *', async () => {
+      console.log('Scheduler triggered at', new Date().toString());
+      try {
+        console.log('Updating streaks...');
+        const users = await User.find({});
+        users.forEach((user) => {
+          user.populate('goals');
+          user.goals.forEach((goal) => {
+            if (goal.completedToday) {
+              goal.streak += 1;
+              goal.completedToday = false;
+            } else {
+              goal.streak = 0;
+            }
+            goal.save();
+          });
+        });
+      } catch (error) {
+        console.error('Error in updateStreaks:', error);
+      }
+    });
   } catch (error) {
     console.error(error);
   }

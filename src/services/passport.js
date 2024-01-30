@@ -8,9 +8,9 @@ import User from '../models/user_model';
 // loads in .env file if needed
 dotenv.config({ silent: true });
 
-// options for local strategy, we'll use email AS the username
+// options for local strategy, we'll use netid AS the username
 // not have separate ones
-const localOptions = { usernameField: 'email' };
+const localOptions = { usernameField: 'netid' };
 
 // options for jwt strategy
 // we'll pass in the jwt in an `authorization` header
@@ -21,23 +21,25 @@ const jwtOptions = {
 };
 // NOTE: we are not calling this a bearer token (although it technically is), if you see people use Bearer in front of token on the internet you could either ignore it, use it but then you have to parse it out here as well as prepend it on the frontend.
 
-// username/email + password authentication strategy
-const localLogin = new LocalStrategy(localOptions, async (email, password, done) => {
+// username/netid + password authentication strategy
+const localLogin = new LocalStrategy(localOptions, async (netid, password, done) => {
   let user;
-  let isMatch;
+  // let isMatch;
 
   try {
-    // finding a user with the given email
-    user = await User.findOne({ email });
-    // if no user exists with that email, call done with false
+    // finding a user with the given netid
+    user = await User.findOne({ netid });
+    // if no user exists with that netid, call done with false
+    console.log('localLogin');
+    console.log('user: ', user);
     if (!user) {
       return done(null, false);
     }
     // otherwise, we compare passwords and see if `password` equal to user.password. these are both hashed passwords
     // isMatch is a boolean that stores the result of this comparison
-    isMatch = await user.comparePassword(password);
+    // isMatch = await user.comparePassword(password);
     // if they don't match, return done with false
-    if (!isMatch) {
+    if (true) {
       return done(null, false);
     } else {
       // if they do match, call done with the user
@@ -55,7 +57,7 @@ const jwtLogin = new JwtStrategy(jwtOptions, async (payload, done) => {
   // otherwise, call done without a user object
   let user;
   try {
-    // finding a user with the given email
+    // finding a user with the given netid
     user = await User.findById(payload.sub);
   } catch (error) {
     done(error, false);

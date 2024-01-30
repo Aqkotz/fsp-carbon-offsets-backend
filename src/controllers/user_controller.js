@@ -16,6 +16,7 @@ export const getUsers = async (req, res) => {
 export const getUser = async (req, res) => {
   const userId = req.user._id;
   try {
+    console.log('getUser');
     const user = await User.findById(userId);
     return res.json(user);
   } catch (error) {
@@ -176,6 +177,7 @@ export async function setStops(req, res) {
 
 export async function getStops(req, res) {
   try {
+    console.log('getStops');
     const user = await User.findById(req.user._id);
     return res.json(user.stops);
   } catch (error) {

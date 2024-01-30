@@ -27,10 +27,10 @@ router.post('/goals/fail/:id', requireAuth, UserGoals.failGoal);
 
 router.post('/updatestreaks', Users.updateStreaks);
 
-router.post('/fix', UserGoals.fixStreaks);
-
 router.post('/stops', requireAuth, Users.setStops);
 
 router.get('/stops', requireAuth, Users.getStops);
+
+router.get('/carbonfootprint', requireAuth, Users.getCarbonFootprint);
 
 export default router;

@@ -113,15 +113,3 @@ export const failGoal = async (req, res) => {
     return res.status(400).json({ error: error.message });
   }
 };
-
-export const fixStreaks = async (req, res) => {
-  try {
-    const goals = await UserGoal.find({});
-    goals.forEach((goal) => {
-      goal.streak = goal.streak.slice(0, -1);
-    });
-    return res.json(goals);
-  } catch (error) {
-    return res.status(400).json({ error: error.message });
-  }
-};

@@ -27,7 +27,7 @@ router.post('/goals/fail/:id', requireAuth, UserGoals.failGoal);
 
 router.post('/updatestreaks', Users.updateStreaks);
 
-router.post('/fix', Users.fixStreaks);
+router.post('/fix', UserGoals.fixStreaks);
 
 router.post('/stops', requireAuth, Users.setStops);
 

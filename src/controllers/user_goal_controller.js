@@ -26,20 +26,6 @@ export const getUserGoals = async (req, res) => {
   }
 };
 
-export const fixStreaks = async (req, res) => {
-  try {
-    const goals = await UserGoal.find({});
-    goals.forEach((goal) => {
-      goal.completedToday = false;
-      goal.failed = false;
-      goal.save();
-    });
-    return res.json(goals);
-  } catch (error) {
-    return res.status(400).json({ error: error.message });
-  }
-};
-
 export const setGoal = async (req, res) => {
   try {
     const { description } = req.body;

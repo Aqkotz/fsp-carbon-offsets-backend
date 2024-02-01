@@ -16,6 +16,7 @@ export const getUsers = async (req, res) => {
 export const getUser = async (req, res) => {
   const userId = req.user._id;
   try {
+    console.log('getUser');
     const user = await User.findById(userId);
     return res.json(user);
   } catch (error) {
@@ -147,3 +148,97 @@ export const updateStreaks = async (req, res) => {
     return res.status(400).json({ error: error.message });
   }
 };
+
+export async function setStops(req, res) {
+  try {
+    const { stops } = req.body;
+    console.log('stops: ', stops);
+    const user = await User.findById(req.user._id);
+    const uniqueStops = [...new Set(stops)].map((stop) => { return stop.toUpperCase(); });
+
+    // Check if stops are unique
+    if (uniqueStops.length !== stops.length) {
+      return res.status(400).json({ error: 'Stops must be unique' });
+    }
+
+    // Check if each stop is exactly three letters long
+    const invalidStops = uniqueStops.filter((stop) => { return stop.length !== 3; });
+    if (invalidStops.length > 0) {
+      return res.status(400).json({ error: 'Each stop must be exactly three letters long' });
+    }
+
+    user.flightStops = stops;
+    user.carbonFootprint_isStale = true;
+    await user.save();
+    return res.json(user.flightStops);
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+}
+
+export async function getStops(req, res) {
+  try {
+    const user = await User.findById(req.user._id);
+    return res.json(user.flightStops);
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+}
+
+export async function updateCarbonFootprint(user) {
+  try {
+    const { flightStops } = user;
+    const stops = flightStops.map((stop) => { return stop.toUpperCase(); });
+    if (stops.length < 2 || stops[0] === '') {
+      user.carbonFootprint = 0;
+      user.carbonFootprint_isStale = false;
+      await user.save();
+      return user.carbonFootprint;
+    }
+    const legs = await Promise.all(stops.map(async (stop, index) => {
+      if (index === stops.length - 1) {
+        return null;
+      }
+      try {
+        const response = await axios.post('https://beta4.api.climatiq.io/travel/distance', {
+          travel_mode: 'air',
+          origin: {
+            iata: stop,
+          },
+          destination: {
+            iata: stops[index + 1],
+          },
+        }, {
+          headers: {
+            Authorization: `Bearer ${process.env.CLIMATIQ_API_KEY}`,
+          },
+        });
+        return response.data.co2e;
+      } catch (error) {
+        console.error('Error fetching data for stop:', stop, error);
+        return null;
+      }
+    }));
+
+    const footprint = legs.filter((leg) => { return leg !== null; }).reduce((a, b) => { return a + b; }, 0);
+    console.log('footprint: ', footprint, 'kg');
+    user.carbonFootprint = footprint;
+    user.carbonFootprint_isStale = false;
+    await user.save();
+    return user.carbonFootprint;
+  } catch (error) {
+    throw new Error(error);
+  }
+}
+
+export async function getCarbonFootprint(req, res) {
+  try {
+    const user = await User.findById(req.user._id);
+    if (user.carbonFootprint_isStale) {
+      await updateCarbonFootprint(user);
+    }
+    return res.json(user.carbonFootprint);
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+}

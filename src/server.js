@@ -60,26 +60,9 @@ async function startServer() {
 
     console.log(`Listening on port ${port}`);
 
-    schedule.scheduleJob('27 02 * * *', async () => {
+    schedule.scheduleJob('00 05 * * *', async () => {
       console.log('Scheduler triggered at', new Date().toString());
-      try {
-        console.log('Updating streaks...');
-        const users = await User.find({});
-        users.forEach((user) => {
-          user.populate('goals');
-          user.goals.forEach((goal) => {
-            if (goal.completedToday) {
-              goal.streak += 1;
-              goal.completedToday = false;
-            } else {
-              goal.streak = 0;
-            }
-            goal.save();
-          });
-        });
-      } catch (error) {
-        console.error('Error in updateStreaks:', error);
-      }
+      await User.updateStreaks();
     });
   } catch (error) {
     console.error(error);

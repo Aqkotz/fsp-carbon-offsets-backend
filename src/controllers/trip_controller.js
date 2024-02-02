@@ -53,6 +53,7 @@ export const getCarbonFootprints = async (trip) => {
           // If no route found, return the origin and destination
           if (response.data.error && response.data.error_code === 'no_route_found') {
             const regex = /between (.+) and (.+)/;
+            console.log(response.data.message.match(regex));
             const [, origin, destination] = response.data.message.match(regex);
             return { error: 'no_route_found', origin, destination };
           }

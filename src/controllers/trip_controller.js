@@ -3,20 +3,6 @@ import axios from 'axios';
 import Trip from '../models/trip_model';
 import User from '../models/user_model';
 
-// Create a new trip
-export const createTrip = async (req, res) => {
-  try {
-    const user = await User.findById(req.user._id);
-    const trip = new Trip(req.body);
-    await trip.save();
-    user.trips.push(trip);
-    await user.save();
-    return res.status(201).json(trip);
-  } catch (error) {
-    return res.status(400).json({ error: error.message });
-  }
-};
-
 // Update a trip
 export const updateTrip = async (req, res) => {
   try {
@@ -62,13 +48,16 @@ export const getCarbonFootprints = async (trip) => {
           }, {
             headers: { Authorization: `Bearer ${process.env.CLIMATIQ_API_KEY}` },
           });
-          return response.data.co2e;
+          return { co2e: response.data.co2e, origin: response.data.origin.name, destination: response.data.destination.name };
         } catch (error) {
           console.error(`Error with mode ${mode} from ${leg} to ${legs[index + 1]}: `, error);
           return null;
         }
       }));
-      return modeFootprints.filter((footprint) => { return footprint !== null; }).reduce((a, b) => { return a + b; }, 0);
+      return {
+        footprints: modeFootprints.filter((footprint) => { return footprint !== null; }).reduce((total, { co2e }) => { return total + co2e; }, 0),
+        stops: [...modeFootprints.filter((footprint) => { return footprint !== null; }).map((footprint) => { return footprint.origin; }), modeFootprints[modeFootprints.length - 1].destination],
+      };
     }));
 
     return carbonFootprints;
@@ -83,7 +72,8 @@ export const updateCarbonFootprint = async (trip) => {
   try {
     const carbonFootprints = await getCarbonFootprints(trip);
     console.log(`Updating carbon footprints for trip ${trip._id}: `, carbonFootprints);
-    const [airFootprint, railFootprint, carFootprint] = carbonFootprints;
+    const [airFootprint, railFootprint, carFootprint] = carbonFootprints.footprints;
+    trip.legs = carbonFootprints.stops;
     trip.potentialCarbonFootprint = { air: airFootprint, rail: railFootprint, car: carFootprint };
     trip.actualCarbonFootprint = trip.potentialCarbonFootprint[trip.modeOfTravel];
     trip.isStale = false;
@@ -93,6 +83,22 @@ export const updateCarbonFootprint = async (trip) => {
     return error;
   }
 };
+
+// Create a new trip
+export const createTrip = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    const trip = new Trip(req.body);
+    await updateCarbonFootprint(trip);
+    await trip.save();
+    user.trips.push(trip);
+    await user.save();
+    return res.status(201).json(trip);
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+};
+
 export const getTrips = async (req, res) => {
   try {
     const user = await User.findById(req.user._id).populate('trips');

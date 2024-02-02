@@ -56,7 +56,7 @@ export const getCarbonFootprints = async (trip) => {
       }));
       return {
         footprints: modeFootprints.filter((footprint) => { return footprint !== null; }).reduce((total, { co2e }) => { return total + co2e; }, 0),
-        stops: [...modeFootprints.filter((footprint) => { return footprint !== null; }).map((footprint) => { return footprint.origin; }), modeFootprints[modeFootprints.length - 1].destination],
+        stops: [...modeFootprints.filter((footprint) => { return footprint !== null; }).map((footprint) => { return footprint.origin; }), modeFootprints[modeFootprints.length - 2].destination],
       };
     }));
 

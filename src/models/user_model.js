@@ -10,6 +10,7 @@ const UserSchema = new Schema({
   flightStops: { type: [String], default: ['', 'BER'] },
   carbonFootprint: { type: Number, default: 0 },
   carbonFootprint_isStale: { type: Boolean, default: true },
+  trips: [{ type: Schema.Types.ObjectId, ref: 'Trip' }],
 }, {
   toObject: { virtuals: true },
   toJSON: { virtuals: true },

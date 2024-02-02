@@ -218,7 +218,7 @@ export async function getCarbonFootprint(req, res) {
       await updateCarbonFootprint(user);
       user = await User.findById(req.user._id); // Refresh user data to get the latest updates
     }
-    return res.json({ carbonFootprint: user.carbonFootprint });
+    return res.json(user.carbonFootprint);
   } catch (error) {
     console.error('Failed to get carbon footprint: ', error);
     return res.status(400).json({ error: error.message });

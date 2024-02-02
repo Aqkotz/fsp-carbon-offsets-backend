@@ -57,7 +57,7 @@ export const getCarbonFootprints = async (trip) => {
             // Extract origin and destination from the message
             const regex = /between (.+) and (.+)/;
             const [, origin, destination] = error.response.data.message.match(regex);
-            return { error: 'no_route_found', origin, destination };
+            return { no_route_found: true, origin, destination };
           } else {
             console.error(`Error with mode ${mode} from ${leg} to ${legs[index + 1]}: `, error);
             return null;
@@ -71,7 +71,7 @@ export const getCarbonFootprints = async (trip) => {
       console.log(stops);
 
       // Check if any leg has no route
-      if (modeFootprints.some((footprint) => { return footprint && footprint.error === 'no_route_found'; })) {
+      if (modeFootprints.some((footprint) => { return footprint && footprint.no_route_found; })) {
         return {
           footprints: null,
           stops,

@@ -213,7 +213,7 @@ export async function updateCarbonFootprint(user) {
 
 export async function getCarbonFootprint(req, res) {
   try {
-    let user = await User.findById(req.user._id);
+    let user = await User.findById(req.user._id).propagate('trips');
     if (user.carbonFootprint_isStale) {
       await updateCarbonFootprint(user);
       user = await User.findById(req.user._id); // Refresh user data to get the latest updates

@@ -191,13 +191,15 @@ export async function updateCarbonFootprint(user) {
     // Update carbon footprints for all trips
     await Promise.all(user.trips.map(async (trip) => {
       if (trip.isStale) {
+        console.log('Updating carbon footprint for trip: ', trip._id);
         return Trip.updateCarbonFootprint(trip);
       }
       return Promise.resolve();
     }));
 
+    console.log('Updating user carbon footprint...');
     // Update user's carbon footprint
-    user.carbonFootprint = user.trips.reduce((total, trip) => {
+    user.carbonFootprint = user.trips.filter((footprint) => { return footprint !== null; }).reduce((total, trip) => {
       return total + trip.actualCarbonFootprint;
     });
     user.carbonFootprint_isStale = false;

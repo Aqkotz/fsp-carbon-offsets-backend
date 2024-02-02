@@ -59,6 +59,8 @@ export const getCarbonFootprints = async (trip) => {
           if (error.response && error.response.data.error_code === 'no_route_found') {
             console.log(`No route found for mode ${mode} from ${leg} to ${legs[index + 1]}`);
             return { no_route_found: true, origin: leg, destination: legs[index + 1] };
+          } else if (error.response && error.response.data.error_code === 'invalid_input') {
+            return { invalid_input: true, origin: leg, destination: legs[index + 1] };
           } else {
             console.error(`Error with mode ${mode} from ${leg} to ${legs[index + 1]}: `, error);
             return null;
@@ -67,7 +69,7 @@ export const getCarbonFootprints = async (trip) => {
       }));
 
       // Check if any leg has no route
-      if (modeFootprints.some((footprint) => { return footprint && footprint.no_route_found; })) {
+      if (modeFootprints.some((footprint) => { return footprint && (footprint.no_route_found || footprint.invalid_input); })) {
         return {
           footprint: null,
           stops: null,

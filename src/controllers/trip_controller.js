@@ -36,6 +36,7 @@ export const getCarbonFootprints = async (trip) => {
   try {
     const { legs } = trip;
     const carbonFootprints = await Promise.all(['air', 'rail', 'car'].map(async (mode) => {
+      // Send a request to Climatiq's API to get the carbon footprint for each leg
       const modeFootprints = await Promise.all(legs.map(async (leg, index) => {
         if (index === legs.length - 1) {
           return null;
@@ -48,15 +49,37 @@ export const getCarbonFootprints = async (trip) => {
           }, {
             headers: { Authorization: `Bearer ${process.env.CLIMATIQ_API_KEY}` },
           });
+
+          // If no route found, return the origin and destination
+          if (response.data.error && response.data.error_code === 'no_route_found') {
+            const regex = /between (.+) and (.+)/;
+            const [, origin, destination] = response.data.message.match(regex);
+            return { error: 'no_route_found', origin, destination };
+          }
+
+          // Return the carbon footprint and the origin and destination of each leg
           return { co2e: response.data.co2e, origin: response.data.origin.name, destination: response.data.destination.name };
         } catch (error) {
           console.error(`Error with mode ${mode} from ${leg} to ${legs[index + 1]}: `, error);
           return null;
         }
       }));
+
+      // Create a new list of legs based on Climatiq's queries
+      const stops = [...modeFootprints.filter((footprint) => { return footprint !== null; }).map((footprint) => { return footprint.origin; }), modeFootprints[modeFootprints.length - 2].destination];
+
+      // Check if any leg has no route
+      if (modeFootprints.some((footprint) => { return footprint.error === 'no_route_found'; })) {
+        return {
+          footprints: null,
+          stops,
+        };
+      }
+
+      // Return the total carbon footprint and the list of legs if there is a carbon footprint for the route
       return {
         footprints: modeFootprints.filter((footprint) => { return footprint !== null; }).reduce((total, { co2e }) => { return total + co2e; }, 0),
-        stops: [...modeFootprints.filter((footprint) => { return footprint !== null; }).map((footprint) => { return footprint.origin; }), modeFootprints[modeFootprints.length - 2].destination],
+        stops,
       };
     }));
 

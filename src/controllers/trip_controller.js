@@ -79,6 +79,8 @@ export const getCarbonFootprints = async (trip) => {
         };
       }
 
+      console.log(modeFootprints.filter((footprint) => { return footprint !== null; }).reduce((total, { co2e }) => { return total + co2e; }, 0));
+
       // Return the total carbon footprint and the list of legs if there is a carbon footprint for the route
       return {
         footprint: modeFootprints.filter((footprint) => { return footprint !== null; }).reduce((total, { co2e }) => { return total + co2e; }, 0),
@@ -86,12 +88,16 @@ export const getCarbonFootprints = async (trip) => {
       };
     }));
 
-    return {
+    const out = {
       air: carbonFootprints[0].footprint,
       rail: carbonFootprints[1].footprint,
       car: carbonFootprints[2].footprint,
       legs: carbonFootprints[1].stops,
     };
+
+    console.log('Carbon footprints: ', out);
+
+    return out;
   } catch (error) {
     console.error('Error calculating carbon footprints: ', error);
     throw error;

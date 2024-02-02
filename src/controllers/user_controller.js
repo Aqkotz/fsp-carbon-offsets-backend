@@ -198,26 +198,29 @@ export async function updateCarbonFootprint(user) {
     }));
 
     console.log('Updating user carbon footprint...');
-    // Update user's carbon footprint
-    user.carbonFootprint = user.trips.filter((footprint) => { return footprint !== null; }).reduce((total, trip) => {
-      return total + trip.actualCarbonFootprint;
-    });
+    // Ensure numerical values for carbon footprints and sum them up
+    user.carbonFootprint = user.trips
+      .filter((trip) => { return trip !== null && typeof trip.actualCarbonFootprint === 'number'; })
+      .reduce((total, trip) => { return total + trip.actualCarbonFootprint; }, 0);
+
     user.carbonFootprint_isStale = false;
     await user.save();
-    return user.carbonFootprint;
   } catch (error) {
-    throw new Error(error);
+    console.error('Error updating carbon footprints: ', error);
+    throw error; // Rethrow the error to be handled by the caller
   }
 }
 
 export async function getCarbonFootprint(req, res) {
   try {
-    const user = await User.findById(req.user._id);
+    let user = await User.findById(req.user._id);
     if (user.carbonFootprint_isStale) {
       await updateCarbonFootprint(user);
+      user = await User.findById(req.user._id); // Refresh user data to get the latest updates
     }
-    return res.json(user.carbonFootprint);
+    return res.json({ carbonFootprint: user.carbonFootprint });
   } catch (error) {
+    console.error('Failed to get carbon footprint: ', error);
     return res.status(400).json({ error: error.message });
   }
 }

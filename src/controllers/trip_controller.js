@@ -99,7 +99,7 @@ export const updateCarbonFootprint = async (trip) => {
     const carbonFootprints = await getCarbonFootprints(trip);
     console.log(`Updating carbon footprints for trip ${trip._id}: `, carbonFootprints);
     const [airFootprint, railFootprint, carFootprint] = carbonFootprints.footprints;
-    trip.legs = carbonFootprints.stops;
+    trip.legs = railFootprint.stops;
     trip.potentialCarbonFootprint = { air: airFootprint, rail: railFootprint, car: carFootprint };
     trip.actualCarbonFootprint = trip.potentialCarbonFootprint[trip.modeOfTravel];
     trip.isStale = false;

@@ -72,7 +72,7 @@ export const getCarbonFootprints = async (trip) => {
       console.log(stops);
 
       // Check if any leg has no route
-      if (modeFootprints.some((footprint) => { return !footprint || footprint.error === 'no_route_found'; })) {
+      if (modeFootprints.some((footprint) => { return footprint && footprint.error === 'no_route_found'; })) {
         return {
           footprints: null,
           stops,

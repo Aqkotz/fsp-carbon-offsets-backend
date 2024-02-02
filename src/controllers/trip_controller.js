@@ -81,12 +81,17 @@ export const getCarbonFootprints = async (trip) => {
 
       // Return the total carbon footprint and the list of legs if there is a carbon footprint for the route
       return {
-        footprints: modeFootprints.filter((footprint) => { return footprint !== null; }).reduce((total, { co2e }) => { return total + co2e; }, 0),
+        footprint: modeFootprints.filter((footprint) => { return footprint !== null; }).reduce((total, { co2e }) => { return total + co2e; }, 0),
         stops,
       };
     }));
 
-    return carbonFootprints;
+    return {
+      air: carbonFootprints[0].footprint,
+      rail: carbonFootprints[1].footprint,
+      car: carbonFootprints[2].footprint,
+      legs: carbonFootprints[1].stops,
+    };
   } catch (error) {
     console.error('Error calculating carbon footprints: ', error);
     throw error;
@@ -98,9 +103,11 @@ export const updateCarbonFootprint = async (trip) => {
   try {
     const carbonFootprints = await getCarbonFootprints(trip);
     console.log(`Updating carbon footprints for trip ${trip._id}: `, carbonFootprints);
-    const [airFootprint, railFootprint, carFootprint] = carbonFootprints.footprints;
-    trip.legs = railFootprint.stops;
-    trip.potentialCarbonFootprint = { air: airFootprint, rail: railFootprint, car: carFootprint };
+    const {
+      air, rail, car, legs,
+    } = carbonFootprints;
+    trip.legs = legs;
+    trip.potentialCarbonFootprint = { air, rail, car };
     trip.actualCarbonFootprint = trip.potentialCarbonFootprint[trip.modeOfTravel];
     trip.isStale = false;
     await trip.save();

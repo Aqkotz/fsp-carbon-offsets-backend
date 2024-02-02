@@ -11,6 +11,9 @@ export const updateTrip = async (req, res) => {
     if (!trip) {
       return res.status(404).json({ error: 'Trip not found' });
     }
+    const user = await User.findById(req.user._id);
+    user.carbonFootprint_isStale = true;
+    await user.save();
     return res.json(trip);
   } catch (error) {
     return res.status(400).json({ error: error.message });

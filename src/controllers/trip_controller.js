@@ -50,19 +50,18 @@ export const getCarbonFootprints = async (trip) => {
             headers: { Authorization: `Bearer ${process.env.CLIMATIQ_API_KEY}` },
           });
 
-          // If no route found, return the origin and destination
-          if (response.data.error && response.data.error_code === 'no_route_found') {
-            const regex = /between (.+) and (.+)/;
-            console.log(response.data.message.match(regex));
-            const [, origin, destination] = response.data.message.match(regex);
-            return { error: 'no_route_found', origin, destination };
-          }
-
           // Return the carbon footprint and the origin and destination of each leg
           return { co2e: response.data.co2e, origin: response.data.origin.name, destination: response.data.destination.name };
         } catch (error) {
-          console.error(`Error with mode ${mode} from ${leg} to ${legs[index + 1]}: `, error);
-          return null;
+          if (error.response && error.response.data.error_code === 'no_route_found') {
+            // Extract origin and destination from the message
+            const regex = /between (.+) and (.+)/;
+            const [, origin, destination] = error.response.data.message.match(regex);
+            return { error: 'no_route_found', origin, destination };
+          } else {
+            console.error(`Error with mode ${mode} from ${leg} to ${legs[index + 1]}: `, error);
+            return null;
+          }
         }
       }));
 
@@ -78,8 +77,6 @@ export const getCarbonFootprints = async (trip) => {
           stops,
         };
       }
-
-      console.log(modeFootprints.filter((footprint) => { return footprint !== null; }).reduce((total, { co2e }) => { return total + co2e; }, 0));
 
       // Return the total carbon footprint and the list of legs if there is a carbon footprint for the route
       return {

@@ -6,7 +6,7 @@ import User from '../models/user_model';
 // Create a new trip
 export const createTrip = async (req, res) => {
   try {
-    const user = User.findById(req.body.userId);
+    const user = User.findById(req.user._id);
     const trip = new Trip(req.body);
     await trip.save();
     user.trips.push(trip);

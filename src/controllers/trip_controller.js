@@ -54,11 +54,8 @@ export const getCarbonFootprints = async (trip) => {
           return { co2e: response.data.co2e, origin: response.data.origin.name, destination: response.data.destination.name };
         } catch (error) {
           if (error.response && error.response.data.error_code === 'no_route_found') {
-            // Extract origin and destination from the message
-            const regex = /between (.+) and (.+)/;
-            console.log(`No route found. Message: ${error.response.data.message}, regex: ${error.response.data.message.match(regex)}`);
-            const [, origin, destination] = error.response.data.message.match(regex);
-            return { no_route_found: true, origin, destination };
+            console.log(`No route found for mode ${mode} from ${leg} to ${legs[index + 1]}`);
+            return { no_route_found: true, origin: leg, destination: legs[index + 1] };
           } else {
             console.error(`Error with mode ${mode} from ${leg} to ${legs[index + 1]}: `, error);
             return null;
@@ -66,23 +63,18 @@ export const getCarbonFootprints = async (trip) => {
         }
       }));
 
-      // Create a new list of legs based on Climatiq's queries
-      console.log(`Mode footprints for mode ${mode}: `, modeFootprints);
-      const stops = [...modeFootprints.filter((footprint) => { return footprint !== null; }).map((footprint) => { return footprint.origin; }), modeFootprints[modeFootprints.length - 2].destination];
-      console.log(stops);
-
       // Check if any leg has no route
       if (modeFootprints.some((footprint) => { return footprint && footprint.no_route_found; })) {
         return {
           footprint: null,
-          stops,
+          stops: null,
         };
       }
 
       // Return the total carbon footprint and the list of legs if there is a carbon footprint for the route
       return {
         footprint: modeFootprints.filter((footprint) => { return footprint !== null; }).reduce((total, { co2e }) => { return total + co2e; }, 0),
-        stops,
+        stops: [...modeFootprints.filter((footprint) => { return footprint !== null; }).map((footprint) => { return footprint.origin; }), modeFootprints[modeFootprints.length - 2].destination],
       };
     }));
 
@@ -90,7 +82,7 @@ export const getCarbonFootprints = async (trip) => {
       air: carbonFootprints[0].footprint,
       rail: carbonFootprints[1].footprint,
       car: carbonFootprints[2].footprint,
-      legs: carbonFootprints[1].stops,
+      legs: carbonFootprints[0].stops,
     };
 
     console.log('Carbon footprints: ', out);

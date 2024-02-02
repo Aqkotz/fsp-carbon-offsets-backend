@@ -68,6 +68,7 @@ export const getCarbonFootprints = async (trip) => {
 
       // Create a new list of legs based on Climatiq's queries
       const stops = [...modeFootprints.filter((footprint) => { return footprint !== null; }).map((footprint) => { return footprint.origin; }), modeFootprints[modeFootprints.length - 2].destination];
+      console.log(stops);
 
       // Check if any leg has no route
       if (modeFootprints.some((footprint) => { return footprint.error === 'no_route_found'; })) {

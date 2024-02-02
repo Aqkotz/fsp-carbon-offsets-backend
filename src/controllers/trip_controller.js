@@ -141,8 +141,6 @@ export const getTrips = async (req, res) => {
     user.trips = updatedTrips;
     await user.save();
     updatedTrips = updatedTrips.map((trip) => {
-      trip.origin = trip.legs[0];
-      trip.destination = trip.legs[trip.legs.length - 1];
       return trip;
     });
     return res.json(updatedTrips);

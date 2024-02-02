@@ -3,6 +3,7 @@ import axios from 'axios';
 import xml2js from 'xml2js';
 import User from '../models/user_model';
 import UserGoal from '../models/user_goal_model';
+import Trip from '../models/trip_model';
 
 export const getUsers = async (req, res) => {
   try {
@@ -187,42 +188,18 @@ export async function getStops(req, res) {
 
 export async function updateCarbonFootprint(user) {
   try {
-    const { flightStops } = user;
-    const stops = flightStops.map((stop) => { return stop.toUpperCase(); });
-    if (stops.length < 2 || stops[0] === '') {
-      user.carbonFootprint = 0;
-      user.carbonFootprint_isStale = false;
-      await user.save();
-      return user.carbonFootprint;
-    }
-    const legs = await Promise.all(stops.map(async (stop, index) => {
-      if (index === stops.length - 1) {
-        return null;
+    // Update carbon footprints for all trips
+    await Promise.all(user.trips.map(async (trip) => {
+      if (trip.isStale) {
+        return Trip.updateCarbonFootprint(trip);
       }
-      try {
-        const response = await axios.post('https://beta4.api.climatiq.io/travel/distance', {
-          travel_mode: 'air',
-          origin: {
-            iata: stop,
-          },
-          destination: {
-            iata: stops[index + 1],
-          },
-        }, {
-          headers: {
-            Authorization: `Bearer ${process.env.CLIMATIQ_API_KEY}`,
-          },
-        });
-        return response.data.co2e;
-      } catch (error) {
-        console.error('Error fetching data for stop:', stop, error);
-        return null;
-      }
+      return Promise.resolve();
     }));
 
-    const footprint = legs.filter((leg) => { return leg !== null; }).reduce((a, b) => { return a + b; }, 0);
-    console.log('footprint: ', footprint, 'kg');
-    user.carbonFootprint = footprint;
+    // Update user's carbon footprint
+    user.carbonFootprint = user.trips.reduce((total, trip) => {
+      return total + trip.actualCarbonFootprint;
+    });
     user.carbonFootprint_isStale = false;
     await user.save();
     return user.carbonFootprint;

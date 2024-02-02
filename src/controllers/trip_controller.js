@@ -121,6 +121,7 @@ export const createTrip = async (req, res) => {
     await updateCarbonFootprint(trip);
     await trip.save();
     user.trips.push(trip);
+    user.carbonFootprint_isStale = true;
     await user.save();
     return res.status(201).json(trip);
   } catch (error) {

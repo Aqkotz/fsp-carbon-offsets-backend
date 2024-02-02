@@ -1,3 +1,4 @@
+/* eslint-disable prefer-destructuring */
 import axios from 'axios';
 import Trip from '../models/trip_model';
 import User from '../models/user_model';
@@ -96,7 +97,7 @@ export const getTrips = async (req, res) => {
   try {
     const user = await User.findById(req.user._id).populate('trips');
     const { trips } = user;
-    const updatedTrips = await Promise.all(trips.map(async (trip) => {
+    let updatedTrips = await Promise.all(trips.map(async (trip) => {
       if (trip.isStale) {
         return updateCarbonFootprint(trip);
       }
@@ -104,6 +105,11 @@ export const getTrips = async (req, res) => {
     }));
     user.trips = updatedTrips;
     await user.save();
+    updatedTrips = updatedTrips.map((trip) => {
+      trip.origin = trip.legs[0];
+      trip.destination = trip.legs[trip.legs.length - 1];
+      return trip;
+    });
     return res.json(updatedTrips);
   } catch (error) {
     return res.status(400).json({ error: error.message });

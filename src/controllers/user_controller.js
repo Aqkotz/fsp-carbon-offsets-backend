@@ -215,7 +215,7 @@ export async function getCarbonFootprint(req, res) {
   try {
     let user = await User.findById(req.user._id).populate('trips');
     if (user.carbonFootprint_isStale) {
-      await updateCarbonFootprint(user);
+      await User.updateCarbonFootprint(user);
       user = await User.findById(req.user._id); // Refresh user data to get the latest updates
     }
     return res.json(user.carbonFootprint);

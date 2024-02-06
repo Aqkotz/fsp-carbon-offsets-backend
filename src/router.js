@@ -37,13 +37,13 @@ router.get('/carbonfootprint', requireAuth, Users.getCarbonFootprint);
 
 router.post('/trips', requireAuth, Trips.createTrip);
 
+router.post('/trips/estimate', requireAuth, Trips.getTripEstimate);
+
 router.post('/trips/:id', requireAuth, Trips.updateTrip);
 
 router.delete('/trips/:id', requireAuth, Trips.deleteTrip);
 
 router.get('/trips', requireAuth, Trips.getTrips);
-
-router.post('/trips/estimate', requireAuth, Trips.getTripEstimate);
 
 router.post('/posts', requireAuth, Post.createPost);
 

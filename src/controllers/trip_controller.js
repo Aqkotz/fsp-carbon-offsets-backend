@@ -158,8 +158,11 @@ export const getTrips = async (req, res) => {
 export const getTripEstimate = async (req, res) => {
   try {
     const { legs, modeOfTravel } = req.body;
+    console.log('Legs: ', legs);
     const trip = new Trip({ legs, modeOfTravel });
+    console.log('Trip: ', trip);
     const carbonFootprints = await getCarbonFootprints(trip);
+    console.log('Carbon footprints: ', carbonFootprints);
     return res.json(carbonFootprints);
   } catch (error) {
     return res.status(400).json({ error: error.message });

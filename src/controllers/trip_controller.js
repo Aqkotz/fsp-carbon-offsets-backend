@@ -154,3 +154,14 @@ export const getTrips = async (req, res) => {
     return res.status(400).json({ error: error.message });
   }
 };
+
+export const getTripEstimate = async (req, res) => {
+  try {
+    const { legs, modeOfTravel } = req.body;
+    const trip = new Trip({ legs, modeOfTravel });
+    const carbonFootprints = await getCarbonFootprints(trip);
+    return res.json(carbonFootprints);
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+};

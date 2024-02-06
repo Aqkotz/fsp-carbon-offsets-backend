@@ -43,6 +43,8 @@ router.delete('/trips/:id', requireAuth, Trips.deleteTrip);
 
 router.get('/trips', requireAuth, Trips.getTrips);
 
+router.post('/trips/estimate', requireAuth, Trips.getTripEstimate);
+
 router.post('/posts', requireAuth, Post.createPost);
 
 router.get('/posts', requireAuth, Post.getPosts);

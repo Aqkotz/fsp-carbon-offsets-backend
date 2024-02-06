@@ -181,7 +181,7 @@ export async function getStops(req, res) {
   }
 }
 
-export async function updateCarbonFootprint(user) {
+async function updateCarbonFootprint(user) {
   try {
     // Update carbon footprints for all trips
     await Promise.all(user.trips.map(async (trip) => {

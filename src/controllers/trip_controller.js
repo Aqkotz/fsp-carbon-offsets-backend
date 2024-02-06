@@ -156,6 +156,7 @@ export const getTrips = async (req, res) => {
 };
 
 export const getTripEstimate = async (req, res) => {
+  console.log('Getting trip estimate...');
   try {
     const { legs, modeOfTravel } = req.body;
     console.log('Legs: ', legs);

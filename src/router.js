@@ -2,6 +2,7 @@ import { Router } from 'express';
 import * as Users from './controllers/user_controller';
 import * as UserGoals from './controllers/user_goal_controller';
 import * as Trips from './controllers/trip_controller';
+import * as Post from './controllers/post_controller';
 import { requireAuth, requireSignin } from './services/passport';
 
 const router = Router();
@@ -41,5 +42,17 @@ router.post('/trips/:id', requireAuth, Trips.updateTrip);
 router.delete('/trips/:id', requireAuth, Trips.deleteTrip);
 
 router.get('/trips', requireAuth, Trips.getTrips);
+
+router.post('/posts', requireAuth, Post.createPost);
+
+router.get('/posts', requireAuth, Post.getPosts);
+
+router.get('/posts/:id', requireAuth, Post.getPost);
+
+router.delete('/posts/:id', requireAuth, Post.deletePost);
+
+router.post('/posts/:id', requireAuth, Post.updatePost);
+
+router.get('/posts/category/:category', requireAuth, Post.getPostsByCategory);
 
 export default router;

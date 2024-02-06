@@ -26,18 +26,15 @@ export const getUser = async (req, res) => {
 };
 
 export const signin = (user) => {
-  // Here we log the user in and return a token
   return tokenForUser(user);
 };
 
 export async function createUser({
   netid, password, name, goals,
 }) {
-  // See if a user with the given netid exists
   const existingUser = await User.findOne({ netid });
   if (existingUser) {
     console.log('existing user!!!');
-    // If a user with netid does exist, return an error
     throw new Error('Netid is in use');
   }
 
@@ -157,12 +154,10 @@ export async function setStops(req, res) {
     const user = await User.findById(req.user._id);
     const uniqueStops = [...new Set(stops)].map((stop) => { return stop.toUpperCase(); });
 
-    // Check if stops are unique
     if (uniqueStops.length !== stops.length) {
       return res.status(400).json({ error: 'Stops must be unique' });
     }
 
-    // Check if each stop is exactly three letters long
     const invalidStops = uniqueStops.filter((stop) => { return stop.length !== 3; });
     if (invalidStops.length > 0) {
       return res.status(400).json({ error: 'Each stop must be exactly three letters long' });
@@ -215,8 +210,9 @@ export async function getCarbonFootprint(req, res) {
   try {
     let user = await User.findById(req.user._id).populate('trips');
     if (user.carbonFootprint_isStale) {
-      await User.updateCarbonFootprint(user);
-      user = await User.findById(req.user._id); // Refresh user data to get the latest updates
+      console.log(`Updating carbon footprint for user ${user.name}...`);
+      await updateCarbonFootprint(user);
+      user = await User.findById(req.user._id);
     }
     return res.json(user.carbonFootprint);
   } catch (error) {

@@ -55,6 +55,6 @@ router.delete('/posts/:id', requireAuth, Post.deletePost);
 
 router.post('/posts/:id', requireAuth, Post.updatePost);
 
-router.get('/posts/category/:category', requireAuth, Post.getPostsByCategory);
+router.get('/posts/theme/:theme', requireAuth, Post.getPostsByTheme);
 
 export default router;

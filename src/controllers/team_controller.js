@@ -20,7 +20,7 @@ export const joinTeam = async (req, res) => {
     if (!team) {
       return res.status(400).json({ error: 'Team not found' });
     }
-    team.members.push(user);
+    team.members.push(user.id);
     user.team = team;
     await team.save();
     await user.save();
@@ -33,7 +33,7 @@ export const joinTeam = async (req, res) => {
 export const getTeam = async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
-    const team = await Team.findById(user.team);
+    const team = await Team.findById(user.team.populate('members'));
     return res.json(team);
   } catch (error) {
     return res.status(400).json({ error: error.message });
@@ -44,7 +44,7 @@ export const getJoinCode = async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
     const team = await Team.findById(user.team);
-    if (team.admins.includes(user)) {
+    if (team.admins.includes(user.id)) {
       return res.json(team.joinCode);
     }
     return res.status(400).json({ error: 'User is not an admin' });

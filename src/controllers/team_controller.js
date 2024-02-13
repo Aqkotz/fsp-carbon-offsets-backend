@@ -21,7 +21,23 @@ export const joinTeam = async (req, res) => {
       return res.status(400).json({ error: 'Team not found' });
     }
     team.members.push(user.id);
+    team.carbonFootprint_isStale = true;
     user.team = team;
+    await team.save();
+    await user.save();
+    return res.json(team);
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+};
+
+export const leaveTeam = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    const team = await Team.findById(user.team);
+    team.members.pull(user.id);
+    team.carbonFootprint_isStale = true;
+    user.team = null;
     await team.save();
     await user.save();
     return res.json(team);
@@ -87,7 +103,7 @@ export async function getCarbonFootprint(req, res) {
     if (!team.members.map((member) => { return member.id; }).includes(user.id)) {
       return res.status(400).json({ error: 'User not in team' });
     }
-    if (team.carbonFootprint_isStale) {
+    if (team.carbonFootprint_isStale || team.members.any((member) => { return member.carbonFootprint_isStale; })) {
       console.log(`Updating carbon footprint for team ${team.name}...`);
       await updateCarbonFootprint(team);
       team = await Team.findById(teamId);

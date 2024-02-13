@@ -72,7 +72,6 @@ export async function updateCarbonFootprint(team) {
     team.carbonFootprint = team.members
       .reduce((total, user) => { return total + user.carbonFootprint; }, 0);
 
-    team.carbonFootprint_isStale = false;
     await team.save();
   } catch (error) {
     console.error('Error updating carbon footprints: ', error);

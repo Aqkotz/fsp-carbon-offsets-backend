@@ -4,6 +4,7 @@ import User from '../models/user_model';
 export const createTeam = async (req, res) => {
   try {
     const team = new Team(req.body);
+    team.joinCode = Math.random().toString(36).substring(2, 7);
     await team.save();
     return res.status(201).json(team);
   } catch (error) {

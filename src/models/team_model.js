@@ -5,7 +5,7 @@ const teamSchema = new mongoose.Schema({
   description: { type: String },
   members: [{ type: Object, required: true, ref: 'User' }],
   admins: [{ type: Object, required: true, ref: 'User' }],
-  joinCode: { type: String, required: true },
+  joinCode: { type: String },
 }, {
   toObject: { virtuals: true },
   toJSON: { virtuals: true },

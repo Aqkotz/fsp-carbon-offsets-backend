@@ -20,9 +20,9 @@ export const joinTeam = async (req, res) => {
     if (!team) {
       return res.status(400).json({ error: 'Team not found' });
     }
-    team.members.push(user.id);
+    team.members.push(user._id);
     team.carbonFootprint_isStale = true;
-    user.team = team;
+    user.team = team._id;
     await team.save();
     await user.save();
     return res.json(team);
@@ -91,7 +91,7 @@ export async function updateCarbonFootprint(team) {
     await team.save();
   } catch (error) {
     console.error('Error updating carbon footprints: ', error);
-    throw error; // Rethrow the error to be handled by the caller
+    throw error;
   }
 }
 

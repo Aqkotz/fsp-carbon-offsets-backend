@@ -33,7 +33,7 @@ export const joinTeam = async (req, res) => {
 export const getTeam = async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
-    const team = await Team.findById(user.team.populate('members'));
+    const team = await Team.findById(user.team).populate('members');
     return res.json(team);
   } catch (error) {
     return res.status(400).json({ error: error.message });
@@ -42,12 +42,13 @@ export const getTeam = async (req, res) => {
 
 export const getJoinCode = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id);
-    const team = await Team.findById(user.team);
-    if (team.admins.includes(user.id)) {
-      return res.json(team.joinCode);
+    const user = await User.findById(req.user._id).populate('adminOf');
+    const team = user.adminOf;
+    if (!team) {
+      return res.status(400).json({ error: 'User is not an admin' });
     }
-    return res.status(400).json({ error: 'User is not an admin' });
+    console.log(team.joinCode);
+    return res.json(team.joinCode);
   } catch (error) {
     return res.status(400).json({ error: error.message });
   }

@@ -11,6 +11,7 @@ const UserSchema = new Schema({
   carbonFootprint: { type: Number, default: 0 },
   carbonFootprint_isStale: { type: Boolean, default: true },
   trips: [{ type: Schema.Types.ObjectId, ref: 'Trip' }],
+  adminOf: { type: Schema.Types.ObjectId, ref: 'Team' },
   footprintData: {
     houseSqm: { type: Number, default: 0 },
   },

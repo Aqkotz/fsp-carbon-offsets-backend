@@ -66,4 +66,6 @@ router.post('/teams/join', requireAuth, Team.joinTeam);
 
 router.get('/teams/joincode', requireAuth, Team.getJoinCode);
 
+router.get('/teams/carbonfootprint', requireAuth, Team.getCarbonFootprint);
+
 export default router;

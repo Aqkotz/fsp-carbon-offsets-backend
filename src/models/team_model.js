@@ -6,6 +6,8 @@ const teamSchema = new mongoose.Schema({
   members: [{ type: Object, required: true, ref: 'User' }],
   admins: [{ type: Object, required: true, ref: 'User' }],
   joinCode: { type: String },
+  carbonFootprint: { type: Number, default: 0 },
+  carbonFootprint_isStale: { type: Boolean, default: true },
 }, {
   toObject: { virtuals: true },
   toJSON: { virtuals: true },

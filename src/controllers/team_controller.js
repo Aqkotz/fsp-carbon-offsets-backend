@@ -86,6 +86,8 @@ export async function updateCarbonFootprint(team) {
       return Promise.resolve();
     }));
 
+    console.log(team.members);
+
     team.carbonFootprint = team.members
       .reduce((total, user) => { return total + user.carbonFootprint; }, 0);
 

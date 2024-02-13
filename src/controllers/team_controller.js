@@ -32,9 +32,8 @@ export const joinTeam = async (req, res) => {
 
 export const getTeam = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id);
-    const team = await Team.findById(user.team).populate('members');
-    return res.json(team);
+    const user = await User.findById(req.user._id).populate('team');
+    return res.json(user.team);
   } catch (error) {
     return res.status(400).json({ error: error.message });
   }

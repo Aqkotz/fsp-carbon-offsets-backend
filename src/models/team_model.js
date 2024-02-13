@@ -11,6 +11,6 @@ const teamSchema = new mongoose.Schema({
   toJSON: { virtuals: true },
 });
 
-const Post = mongoose.model('Goal', teamSchema);
+const Team = mongoose.model('Team', teamSchema);
 
-module.exports = Post;
+module.exports = Team;

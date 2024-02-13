@@ -3,6 +3,7 @@ import * as Users from './controllers/user_controller';
 import * as UserGoals from './controllers/user_goal_controller';
 import * as Trips from './controllers/trip_controller';
 import * as Post from './controllers/post_controller';
+import * as Team from './controllers/team_controller';
 import { requireAuth, requireSignin } from './services/passport';
 
 const router = Router();
@@ -56,5 +57,13 @@ router.delete('/posts/:id', requireAuth, Post.deletePost);
 router.post('/posts/:id', requireAuth, Post.updatePost);
 
 router.get('/posts/theme/:theme', requireAuth, Post.getPostsByTheme);
+
+router.post('/teams', Team.createTeam);
+
+router.get('/teams', requireAuth, Team.getTeam);
+
+router.post('/teams/join', requireAuth, Team.joinTeam);
+
+router.get('/teams/joincode', requireAuth, Team.getJoinCode);
 
 export default router;

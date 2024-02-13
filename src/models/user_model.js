@@ -14,6 +14,7 @@ const UserSchema = new Schema({
   footprintData: {
     houseSqm: { type: Number, default: 0 },
   },
+  team: { type: Schema.Types.ObjectId, ref: 'Team' },
 }, {
   toObject: { virtuals: true },
   toJSON: { virtuals: true },

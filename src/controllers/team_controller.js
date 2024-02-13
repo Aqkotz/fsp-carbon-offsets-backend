@@ -52,7 +52,7 @@ export const getTeam = async (req, res) => {
     let team = await Team.findById(user.team);
     if (team.carbonFootprint_isStale) {
       console.log(`Updating carbon footprint for team ${team.name}...`);
-      await updateCarbonFootprint(team);
+      await updateCarbonFootprint(await team.populate('members'));
       team = await Team.findById(user.team);
     }
     return res.json(team);
@@ -80,6 +80,7 @@ export async function updateCarbonFootprint(team) {
     // Update carbon footprints for all trips
     await Promise.all(team.members.map(async (user) => {
       if (user.carbonFootprint_isStale) {
+        console.log(`Updating carbon footprint for user ${user.name}...`);
         return User.updateCarbonFootprint(await user.populate('trips'));
       }
       return Promise.resolve();

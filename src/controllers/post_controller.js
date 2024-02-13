@@ -51,11 +51,11 @@ export const updatePost = async (req, res) => {
   }
 };
 
-export const getPostsByCategory = async (req, res) => {
+export const getPostsByTheme = async (req, res) => {
   try {
-    const { category } = req.params;
+    const { theme } = req.params;
     const posts = await Post.find({
-      category,
+      theme,
     });
     return res.json(posts);
   } catch (error) {

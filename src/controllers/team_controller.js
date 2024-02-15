@@ -50,6 +50,9 @@ export const getTeam = async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
     let team = await Team.findById(user.team);
+    if (!team) {
+      return res.json(null);
+    }
     if (team.carbonFootprint_isStale) {
       console.log(`Updating carbon footprint for team ${team.name}...`);
       await updateCarbonFootprint(await team.populate('members'));

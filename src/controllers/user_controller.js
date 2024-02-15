@@ -1,6 +1,7 @@
 import jwt from 'jwt-simple';
 import axios from 'axios';
 import xml2js from 'xml2js';
+import { House } from '@cco2/carbon-weight';
 import User from '../models/user_model';
 import UserGoal from '../models/user_goal_model';
 import Trip from '../models/trip_model';
@@ -193,6 +194,14 @@ export async function updateCarbonFootprint(user) {
     }));
 
     console.log('Updating user carbon footprint...');
+    const house = {
+      heater: 'urban', // heater type
+      built: 'recent', // Whether the house was built before 1975 (included) or not
+      // region: number; // region of the house
+      surface: 500, // habitable surface of the house in m2
+      type: 'house', // Housing type
+    };
+    console.log('house', House.getEmissionsEstimated(house));
     // Ensure numerical values for carbon footprints and sum them up
     user.carbonFootprint = user.trips
       .filter((trip) => { return trip !== null && typeof trip.actualCarbonFootprint === 'number'; })

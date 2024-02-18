@@ -68,4 +68,8 @@ router.get('/teams/joincode', requireAuth, Team.getJoinCode);
 
 router.get('/teams/carbonfootprint', requireAuth, Team.getCarbonFootprint);
 
+router.post('/teams/leave', requireAuth, Team.leaveTeam);
+
+router.post('/user/foodemissions', Users.getUserFoodEmission);
+
 export default router;

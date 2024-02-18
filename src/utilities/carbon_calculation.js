@@ -210,6 +210,7 @@ export async function getFoodEmissionEstimated(consumption) {
   let none = false;
 
   Object.entries(consumption).forEach(([food, value]) => {
+    console.log('food: ', food, 'value: ', value);
     if (!value) return;
     if (value < WEEK_RANGE.min || value > WEEK_RANGE.max) { none = true; }
     const yearlyWeight = (value * data.foods[food].averageWeight * 52) / 1000; // (from g to Kg)

@@ -1,12 +1,19 @@
 /* eslint-disable import/prefer-default-export */
-import data from './food_emission.json';
 
 const WEEK_RANGE = { min: 0, max: 14 };
 
-export function getFoodEmissionEstimated(consumption) {
+export async function getFoodEmissionEstimated(consumption) {
   let emission = 0;
   let waste = 0;
   let none = false;
+
+  let data;
+  try {
+    data = await import('../data/food_emission.json');
+  } catch (error) {
+    console.error('Failed to load JSON:', error);
+  }
+
   Object.entries(consumption).forEach(([food, value]) => {
     if (!value) return;
     if (value < WEEK_RANGE.min || value > WEEK_RANGE.max) { none = true; }

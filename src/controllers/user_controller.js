@@ -232,7 +232,7 @@ export async function getCarbonFootprint(req, res) {
 export async function getUserFoodEmission(req, res) {
   try {
     const { consumption } = req.body;
-    const emission = getFoodEmissionEstimated(consumption);
+    const emission = await getFoodEmissionEstimated(consumption);
     return res.json(emission);
   } catch (error) {
     console.error('Failed to get food emission: ', error);

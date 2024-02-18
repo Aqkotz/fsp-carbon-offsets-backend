@@ -2,7 +2,7 @@
 
 const WEEK_RANGE = { min: 0, max: 14 };
 
-const data = {
+const foodData = {
   foods: {
     alcohol: {
       averageWeight: 330,
@@ -204,10 +204,183 @@ const data = {
   },
 };
 
+const houseData = {
+  emissionFactors: {
+    coal: {
+      emissionFactor: -1,
+      energyFactor: 2.687,
+    },
+    electric: {
+      emissionFactor: 0.079,
+      energyFactor: 0.079,
+    },
+    fuelOil: {
+      emissionFactor: 0.324,
+      energyFactor: 3.86,
+    },
+    gas: {
+      emissionFactor: 0.244,
+      energyFactor: 3.23,
+    },
+    propane: {
+      emissionFactor: 0.275,
+      energyFactor: 3.45,
+    },
+    urban: {
+      emissionFactor: 0.109,
+      energyFactor: -1,
+    },
+    wood: {
+      emissionFactor: 0.0295,
+      energyFactor: 0.114,
+    },
+  },
+  consumptionFactors: {
+    old: {
+      apartment: {
+        electric: {
+          emissionFactor: 98,
+          surface: 49,
+          part: 16.4,
+        },
+        fuelOil: {
+          emissionFactor: 172,
+          surface: 89,
+          part: 2.55,
+        },
+        gas: {
+          emissionFactor: 146,
+          surface: 71,
+          part: 26.05,
+        },
+        propane: {
+          emissionFactor: 101,
+          surface: 87,
+          part: 0.05,
+        },
+        wood: {
+          emissionFactor: 211,
+          surface: 79,
+          part: 0.25,
+        },
+        urban: {
+          emissionFactor: 255,
+          surface: 71,
+          part: 4.65,
+        },
+      },
+      house: {
+        electric: {
+          emissionFactor: 150,
+          surface: 96,
+          part: 19.35,
+        },
+        fuelOil: {
+          emissionFactor: 187,
+          surface: 119,
+          part: 9.25,
+        },
+        gas: {
+          emissionFactor: 201,
+          surface: 105,
+          part: 16.1,
+        },
+        propane: {
+          emissionFactor: 139,
+          surface: 114,
+          part: 1.25,
+        },
+        wood: {
+          emissionFactor: 290,
+          surface: 106,
+          part: 3.9,
+        },
+        urban: {
+          emissionFactor: -1,
+          surface: -1,
+          part: 0.2,
+        },
+      },
+    },
+    recent: {
+      apartment: {
+        electric: {
+          emissionFactor: 65,
+          surface: 53,
+          part: 16.4,
+        },
+        fuelOil: {
+          emissionFactor: 162,
+          surface: 88,
+          part: 2.55,
+        },
+        gas: {
+          emissionFactor: 125,
+          surface: 71,
+          part: 26.05,
+        },
+        propane: {
+          emissionFactor: 80,
+          surface: 86,
+          part: 0.05,
+        },
+        wood: {
+          emissionFactor: 172,
+          surface: 79,
+          part: 0.25,
+        },
+        urban: {
+          emissionFactor: 230,
+          surface: 70,
+          part: 4.65,
+        },
+      },
+      house: {
+        electric: {
+          emissionFactor: 106,
+          surface: 110,
+          part: 19.35,
+        },
+        fuelOil: {
+          emissionFactor: 171,
+          surface: 120,
+          part: 9.25,
+        },
+        gas: {
+          emissionFactor: 166,
+          surface: 112,
+          part: 16.1,
+        },
+        propane: {
+          emissionFactor: 129,
+          surface: 116,
+          part: 1.25,
+        },
+        wood: {
+          emissionFactor: 235,
+          surface: 114,
+          part: 3.9,
+        },
+        urban: {
+          emissionFactor: -1,
+          surface: -1,
+          part: 0.2,
+        },
+      },
+    },
+  },
+  study: {
+    apartment: 12276500,
+    house: 16103200,
+    peopleCount: 67626396,
+  },
+};
+
 export async function getFoodEmissionEstimated(consumption) {
   let emission = 0;
   let waste = 0;
   let none = false;
+  const data = foodData;
 
   Object.entries(consumption).forEach(([category, value]) => {
     if (!value) return;
@@ -227,4 +400,30 @@ export async function getFoodEmissionEstimated(consumption) {
   if (none) return { emission: -1, waste: -1 };
 
   return { emission, waste };
+}
+
+export function getHouseEmissionEstimated(house) {
+  if (house.surface < 0) return -1;
+
+  const data = houseData;
+
+  // Get the factor emission from study - kWh/(m².year)
+  const emissionFactor = data.consumptionFactors?.[house.built]?.[house.type]?.[house.heater]?.emissionFactor;
+  if (!emissionFactor || emissionFactor < 0) return -1;
+
+  // Retrieve the combustible Factor - kgCO2e/kW
+  const combustibleFactor = data.emissionFactors?.[house.heater]?.emissionFactor;
+  if (!combustibleFactor) return -1;
+
+  // Check if a climateCoeff factor is available - Cste
+  const climateCoeff = 1.1; // HARDCODING FOR H1 REGION: SPECIFIC TO BERLIN
+  // const region = data.regions?.find((r) => { return r.DEP === house.region; });
+  // if (
+  //   region
+  //   && data.climateCoeffs
+  //   && data.climateCoeffs[region.FACTOR]
+  // ) climateCoeff = data.climateCoeffs[region.FACTOR];
+
+  // Compute
+  return house.surface * emissionFactor * combustibleFactor * climateCoeff;
 }

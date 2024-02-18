@@ -4,7 +4,7 @@ import xml2js from 'xml2js';
 import User from '../models/user_model';
 import UserGoal from '../models/user_goal_model';
 import Trip from '../models/trip_model';
-import { getFoodEmissionEstimated } from '../utilities/carbon_calculation';
+import { getFoodEmissionEstimated, getHouseEmissionEstimated } from '../utilities/carbon_calculation';
 
 export const getUsers = async (req, res) => {
   try {
@@ -236,6 +236,17 @@ export async function getUserFoodEmission(req, res) {
     return res.json(emission);
   } catch (error) {
     console.error('Failed to get food emission: ', error);
+    return res.status(400).json({ error: error.message });
+  }
+}
+
+export async function getUserHouseEmission(req, res) {
+  try {
+    const { house } = req.body;
+    const emission = getHouseEmissionEstimated(house);
+    return res.json(emission);
+  } catch (error) {
+    console.error('Failed to get house emission: ', error);
     return res.status(400).json({ error: error.message });
   }
 }

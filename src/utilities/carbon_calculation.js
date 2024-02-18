@@ -1,5 +1,5 @@
 /* eslint-disable import/prefer-default-export */
-import data from '../data/food_emission.json';
+import data from './food_emission.json';
 
 const WEEK_RANGE = { min: 0, max: 14 };
 

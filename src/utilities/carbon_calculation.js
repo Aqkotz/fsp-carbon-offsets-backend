@@ -209,16 +209,18 @@ export async function getFoodEmissionEstimated(consumption) {
   let waste = 0;
   let none = false;
 
-  Object.entries(consumption).forEach(([food, value]) => {
-    console.log('food: ', food, 'value: ', value);
+  Object.entries(consumption).forEach(([category, value]) => {
     if (!value) return;
-    if (value < WEEK_RANGE.min || value > WEEK_RANGE.max) { none = true; }
-    const yearlyWeight = (value * data.foods[food].averageWeight * 52) / 1000; // (from g to Kg)
-    emission += yearlyWeight * data.foods[food].emissionFactor;
-    waste
+    Object.entries(value).forEach(([food, amount]) => {
+      if (!amount) return;
+      if (amount < WEEK_RANGE.min || value > WEEK_RANGE.max) { none = true; }
+      const yearlyWeight = (amount * data.foods[category].averageWeight * 52) / 1000;
+      emission += yearlyWeight * data.foods[category].emissionFactors[food];
+      waste
         += yearlyWeight
-        * data.foods[food].wasteRatioFactor
-        * data.foods[food].wasteEmissionFactor;
+        * data.foods[category].wasteRatioFactor
+        * data.foods[category].wasteEmissionFactor;
+    });
   });
 
   if (none) return { emission: -1, waste: -1 };

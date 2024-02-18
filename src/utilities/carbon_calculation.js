@@ -216,10 +216,11 @@ export async function getFoodEmissionEstimated(consumption) {
       if (amount < WEEK_RANGE.min || value > WEEK_RANGE.max) { none = true; }
       const yearlyWeight = (amount * data.foods[category].averageWeight * 52) / 1000;
       emission += yearlyWeight * data.foods[category].emissionFactors[food];
+      const wasteType = data.foods[category].wasteEmissionFactor;
       waste
         += yearlyWeight
-        * data.foods[category].wasteRatioFactor
-        * data.foods[category].wasteEmissionFactor;
+        * data.wastes[wasteType].packaging
+        * data.wastes[wasteType].ratio;
     });
   });
 

@@ -1,10 +1,10 @@
 import jwt from 'jwt-simple';
 import axios from 'axios';
 import xml2js from 'xml2js';
-// import { House } from '@cco2/carbon-weight';
 import User from '../models/user_model';
 import UserGoal from '../models/user_goal_model';
 import Trip from '../models/trip_model';
+import { getFoodEmissionEstimated } from '../utilities/carbon_calculation';
 
 export const getUsers = async (req, res) => {
   try {
@@ -194,17 +194,13 @@ export async function updateCarbonFootprint(user) {
     }));
 
     console.log('Updating user carbon footprint...');
-    const house = {
-      heater: 'urban', // heater type
-      built: 'recent', // Whether the house was built before 1975 (included) or not
-      // region: number; // region of the house
-      surface: 500, // habitable surface of the house in m2
-      type: 'house', // Housing type
-    };
-
-    const module = await import('@cco2/carbon-weight');
-    const { House } = module;
-    console.log('house', House.getEmissionsEstimated(house));
+    // const house = {
+    //   heater: 'urban', // heater type
+    //   built: 'recent', // Whether the house was built before 1975 (included) or not
+    //   // region: number; // region of the house
+    //   surface: 500, // habitable surface of the house in m2
+    //   type: 'house', // Housing type
+    // };
     // Ensure numerical values for carbon footprints and sum them up
     user.carbonFootprint = user.trips
       .filter((trip) => { return trip !== null && typeof trip.actualCarbonFootprint === 'number'; })
@@ -229,6 +225,17 @@ export async function getCarbonFootprint(req, res) {
     return res.json(user.carbonFootprint);
   } catch (error) {
     console.error('Failed to get carbon footprint: ', error);
+    return res.status(400).json({ error: error.message });
+  }
+}
+
+export async function getUserFoodEmission(req, res) {
+  try {
+    const { consumption } = req.body;
+    const emission = getFoodEmissionEstimated(consumption);
+    return res.json(emission);
+  } catch (error) {
+    console.error('Failed to get food emission: ', error);
     return res.status(400).json({ error: error.message });
   }
 }

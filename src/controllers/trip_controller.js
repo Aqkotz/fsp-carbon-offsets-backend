@@ -1,4 +1,3 @@
-/* eslint-disable prefer-destructuring */
 import axios from 'axios';
 import Trip from '../models/trip_model';
 import User from '../models/user_model';

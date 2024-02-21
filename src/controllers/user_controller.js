@@ -148,7 +148,7 @@ export const updateStreaks = async (req, res) => {
   }
 };
 
-export async function updateCarbonFootprint(user) {
+export async function updateUserCarbonFootprint(user) {
   try {
     // Update carbon footprints for all trips
     await Promise.all(user.trips.map(async (trip) => {
@@ -183,7 +183,7 @@ export async function getCarbonFootprint(req, res) {
     let user = await User.findById(req.user._id).populate('trips');
     if (user.carbonFootprint_isStale) {
       console.log(`Updating carbon footprint for user ${user.name}...`);
-      await updateCarbonFootprint(user);
+      await updateUserCarbonFootprint(user);
       user = await User.findById(req.user._id);
     }
     return res.json(user.carbonFootprint);
@@ -196,7 +196,7 @@ export async function getCarbonFootprint(req, res) {
 export async function getUserFoodEmission(req, res) {
   try {
     const { consumption } = req.body;
-    const emission = await getFoodEmissionWeekly(consumption);
+    const emission = getFoodEmissionWeekly(consumption);
     return res.json(emission);
   } catch (error) {
     console.error('Failed to get food emission: ', error);

@@ -74,8 +74,8 @@ router.post('/teams/leave', requireAuth, Team.leaveTeam);
 
 // router.post('/user/houseemissions', Users.getUserHouseEmission);
 
-router.post('/food', requireAuth, Users.addFoodWeeklyConsumption);
+// router.post('/food', requireAuth, Users.addFoodWeeklyConsumption);
 
-router.post('/house', requireAuth, Users.setHouseData);
+// router.post('/house', requireAuth, Users.setHouseData);
 
 export default router;

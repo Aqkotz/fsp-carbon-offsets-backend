@@ -215,7 +215,7 @@ const foodSimpleData = {
     wasteEmissionFactor: 'paper',
     averageWeight: 100,
   },
-  cheese: {
+  dairy: {
     emission: 4.25,
     wasteEmissionFactor: 'fat_butter',
     averageWeight: 50,

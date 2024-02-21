@@ -4,7 +4,7 @@ import xml2js from 'xml2js';
 import User from '../models/user_model';
 import UserGoal from '../models/user_goal_model';
 import Trip from '../models/trip_model';
-import { getFoodEmissionEstimated, getHouseEmissionEstimated } from '../utilities/carbon_calculation';
+import { getFoodEmissionWeekly, getHouseEmissionEstimated } from '../utilities/carbon_calculation';
 
 export const getUsers = async (req, res) => {
   try {
@@ -148,40 +148,6 @@ export const updateStreaks = async (req, res) => {
   }
 };
 
-export async function setStops(req, res) {
-  try {
-    const { stops } = req.body;
-    console.log('stops: ', stops);
-    const user = await User.findById(req.user._id);
-    const uniqueStops = [...new Set(stops)].map((stop) => { return stop.toUpperCase(); });
-
-    if (uniqueStops.length !== stops.length) {
-      return res.status(400).json({ error: 'Stops must be unique' });
-    }
-
-    const invalidStops = uniqueStops.filter((stop) => { return stop.length !== 3; });
-    if (invalidStops.length > 0) {
-      return res.status(400).json({ error: 'Each stop must be exactly three letters long' });
-    }
-
-    user.flightStops = stops;
-    user.carbonFootprint_isStale = true;
-    await user.save();
-    return res.json(user.flightStops);
-  } catch (error) {
-    return res.status(400).json({ error: error.message });
-  }
-}
-
-export async function getStops(req, res) {
-  try {
-    const user = await User.findById(req.user._id);
-    return res.json(user.flightStops);
-  } catch (error) {
-    return res.status(400).json({ error: error.message });
-  }
-}
-
 export async function updateCarbonFootprint(user) {
   try {
     // Update carbon footprints for all trips
@@ -193,19 +159,17 @@ export async function updateCarbonFootprint(user) {
       return Promise.resolve();
     }));
 
-    console.log('Updating user carbon footprint...');
-    // const house = {
-    //   heater: 'urban', // heater type
-    //   built: 'recent', // Whether the house was built before 1975 (included) or not
-    //   // region: number; // region of the house
-    //   surface: 500, // habitable surface of the house in m2
-    //   type: 'house', // Housing type
-    // };
-    // Ensure numerical values for carbon footprints and sum them up
-    user.carbonFootprint = user.trips
+    const newFootprint = {};
+
+    newFootprint.travel = user.trips
       .filter((trip) => { return trip !== null && typeof trip.actualCarbonFootprint === 'number'; })
       .reduce((total, trip) => { return total + trip.actualCarbonFootprint; }, 0);
 
+    user.carbonFootprint.food = user.footprintData.food.reduce((total, consumption) => { return total + getFoodEmissionWeekly(consumption); }, 0);
+    user.carbonFootprint.house = getHouseEmissionEstimated(user.footprintData.house);
+    newFootprint.total = newFootprint.travel + user.carbonFootprint.food + user.carbonFootprint.house;
+
+    user.carbonFootprint = newFootprint;
     user.carbonFootprint_isStale = false;
     await user.save();
   } catch (error) {
@@ -232,7 +196,7 @@ export async function getCarbonFootprint(req, res) {
 export async function getUserFoodEmission(req, res) {
   try {
     const { consumption } = req.body;
-    const emission = await getFoodEmissionEstimated(consumption);
+    const emission = await getFoodEmissionWeekly(consumption);
     return res.json(emission);
   } catch (error) {
     console.error('Failed to get food emission: ', error);
@@ -247,6 +211,35 @@ export async function getUserHouseEmission(req, res) {
     return res.json(emission);
   } catch (error) {
     console.error('Failed to get house emission: ', error);
+    return res.status(400).json({ error: error.message });
+  }
+}
+
+export async function addFoodWeeklyConsumption(req, res) {
+  try {
+    const user = await User.findById(req.user._id);
+    const { consumption } = req.body;
+    consumption.date = new Date();
+    user.footprintData.food.push(consumption);
+    user.carbonFootprint_isStale = true;
+    await user.save();
+    return res.json(user.footprintData.food);
+  } catch (error) {
+    console.error('Failed to add food consumption: ', error);
+    return res.status(400).json({ error: error.message });
+  }
+}
+
+export async function setHouseData(req, res) {
+  try {
+    const user = await User.findById(req.user._id);
+    const { house } = req.body;
+    user.footprintData.house = house;
+    user.carbonFootprint_isStale = true;
+    await user.save();
+    return res.json(user.footprintData.house);
+  } catch (error) {
+    console.error('Failed to set house data: ', error);
     return res.status(400).json({ error: error.message });
   }
 }

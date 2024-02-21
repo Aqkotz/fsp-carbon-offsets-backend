@@ -204,7 +204,70 @@ const foodData = {
   },
 };
 
+const foodSimpleData = {
+  alcohol: {
+    emission: 2.05,
+    wasteEmissionFactor: 'glass_bottle',
+    averageWeight: 330,
+  },
+  bread: {
+    emission: 1.5,
+    wasteEmissionFactor: 'paper',
+    averageWeight: 100,
+  },
+  cheese: {
+    emission: 4.25,
+    wasteEmissionFactor: 'fat_butter',
+    averageWeight: 50,
+  },
+  fish: {
+    emission: 7.8,
+    wasteEmissionFactor: 'plastic_film',
+    averageWeight: 130,
+  },
+  fruits: {
+    emission: 1.3,
+    wasteEmissionFactor: 'plastic_film',
+    averageWeight: 200,
+  },
+  legumes: {
+    emission: 1.3,
+    wasteEmissionFactor: 'plastic_film',
+    averageWeight: 200,
+  },
+  vegetables: {
+    emission: 1.3,
+    wasteEmissionFactor: 'plastic_film',
+    averageWeight: 200,
+  },
+  meatRed: {
+    emission: 19.3,
+    wasteEmissionFactor: 'plastic_film',
+    averageWeight: 150,
+  },
+  meatWhite: {
+    emission: 6.6,
+    wasteEmissionFactor: 'plastic_film',
+    averageWeight: 150,
+  },
+  rice: {
+    emission: 0.7,
+    wasteEmissionFactor: 'plastic_film',
+    averageWeight: 150,
+  },
+  soft: {
+    emission: 0.93,
+    wasteEmissionFactor: 'plastic_bottle',
+    averageWeight: 150,
+  },
+};
+
 const houseData = {
+  climateCoeffs: {
+    H1: 1.1,
+    H2: 0.9,
+    H3: 0.6,
+  },
   emissionFactors: {
     coal: {
       emissionFactor: -1,
@@ -376,7 +439,33 @@ const houseData = {
   },
 };
 
-export async function getFoodEmissionEstimated(consumption) {
+export function getFoodEmissionSimple(consumption) {
+  let emission = 0;
+  let waste = 0;
+  let none = false;
+  const data = foodData;
+
+  Object.entries(consumption).forEach(([food, amount]) => {
+    if (amount < WEEK_RANGE.min || amount > WEEK_RANGE.max) { none = true; }
+    const yearlyWeight = (amount * foodSimpleData[food].averageWeight * 52) / 1000;
+    emission += yearlyWeight * foodSimpleData[food].emission;
+    const wasteType = foodSimpleData[food].wasteEmissionFactor;
+    waste
+        += yearlyWeight
+        * data.wastes[wasteType].packaging
+        * data.wastes[wasteType].ratio;
+  });
+
+  if (none) return { emission: -1, waste: -1 };
+
+  return { emission, waste };
+}
+
+export function getFoodEmissionWeekly(consumption) {
+  return getFoodEmissionSimple(consumption) / 52;
+}
+
+export function getFoodEmissionEstimate(consumption) {
   let emission = 0;
   let waste = 0;
   let none = false;
@@ -386,7 +475,7 @@ export async function getFoodEmissionEstimated(consumption) {
     if (!value) return;
     Object.entries(value).forEach(([food, amount]) => {
       if (!amount) return;
-      if (amount < WEEK_RANGE.min || value > WEEK_RANGE.max) { none = true; }
+      if (amount < WEEK_RANGE.min || amount > WEEK_RANGE.max) { none = true; }
       const yearlyWeight = (amount * data.foods[category].averageWeight * 52) / 1000;
       emission += yearlyWeight * data.foods[category].emissionFactors[food];
       const wasteType = data.foods[category].wasteEmissionFactor;

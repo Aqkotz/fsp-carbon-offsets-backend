@@ -458,13 +458,14 @@ export function getFoodEmissionSimple(consumption) {
         * data.wastes[wasteType].ratio;
   });
 
-  if (none) return { emission: -1, waste: -1 };
+  if (none) return null;
 
   return { emission, waste };
 }
 
 export function getFoodEmissionWeekly(consumption) {
   const result = getFoodEmissionSimple(consumption);
+  if (!result) return null;
   return (result.emission + result.waste) / 52;
 }
 
@@ -495,17 +496,17 @@ export function getFoodEmissionEstimate(consumption) {
 }
 
 export function getHouseEmissionEstimated(house) {
-  if (house.surface < 0) return -1;
+  if (house.surface < 0) return null;
 
   const data = houseData;
 
   // Get the factor emission from study - kWh/(m².year)
   const emissionFactor = data.consumptionFactors?.[house.built]?.[house.type]?.[house.heater]?.emissionFactor;
-  if (!emissionFactor || emissionFactor < 0) return -1;
+  if (!emissionFactor || emissionFactor < 0) return null;
 
   // Retrieve the combustible Factor - kgCO2e/kW
   const combustibleFactor = data.emissionFactors?.[house.heater]?.emissionFactor;
-  if (!combustibleFactor) return -1;
+  if (!combustibleFactor) return null;
 
   // Check if a climateCoeff factor is available - Cste
   const climateCoeff = 1.1; // HARDCODING FOR H1 REGION: SPECIFIC TO BERLIN

@@ -22,8 +22,12 @@ export const updateTrip = async (req, res) => {
 // Delete a trip
 export const deleteTrip = async (req, res) => {
   try {
+    const user = await User.findById(req.user._id);
     const { id } = req.params;
     const trip = await Trip.findByIdAndDelete(id);
+    user.trips.pull(trip);
+    user.carbonFootprint_isStale = true;
+    await user.save();
     if (!trip) {
       return res.status(404).json({ error: 'Trip not found' });
     }

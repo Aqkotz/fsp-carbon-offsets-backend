@@ -464,7 +464,8 @@ export function getFoodEmissionSimple(consumption) {
 }
 
 export function getFoodEmissionWeekly(consumption) {
-  return getFoodEmissionSimple(consumption) / 52;
+  const result = getFoodEmissionSimple(consumption);
+  return (result.emission + result.waste) / 52;
 }
 
 export function getFoodEmissionEstimate(consumption) {

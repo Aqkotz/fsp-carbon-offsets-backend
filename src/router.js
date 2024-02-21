@@ -72,6 +72,10 @@ router.post('/user/houseemissions', Users.getUserHouseEmission);
 
 router.post('/food', requireAuth, Users.addFoodWeeklyConsumption);
 
+router.get('/food', requireAuth, Users.getFood);
+
 router.post('/house', requireAuth, Users.setHouseData);
+
+router.get('/house', requireAuth, Users.getHouse);
 
 export default router;

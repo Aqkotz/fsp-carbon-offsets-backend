@@ -243,3 +243,23 @@ export async function setHouseData(req, res) {
     return res.status(400).json({ error: error.message });
   }
 }
+
+export async function getFood(req, res) {
+  try {
+    const user = await User.findById(req.user._id);
+    return res.json(user.footprintData.food);
+  } catch (error) {
+    console.error('Failed to get food consumption: ', error);
+    return res.status(400).json({ error: error.message });
+  }
+}
+
+export async function getHouse(req, res) {
+  try {
+    const user = await User.findById(req.user._id);
+    return res.json(user.footprintData.house);
+  } catch (error) {
+    console.error('Failed to get house data: ', error);
+    return res.status(400).json({ error: error.message });
+  }
+}

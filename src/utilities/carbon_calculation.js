@@ -445,7 +445,8 @@ export function getFoodEmissionSimple(consumption) {
   let none = false;
   const data = foodData;
 
-  Object.entries(consumption).forEach(([food, amount]) => {
+  Object.entries(foodData).forEach(([food, _]) => {
+    const amount = consumption[food];
     if (amount < WEEK_RANGE.min || amount > WEEK_RANGE.max) { none = true; }
     if (!foodSimpleData[food]) throw new Error(`Food ${food} not found in foodSimpleData`);
     const yearlyWeight = (amount * foodSimpleData[food].averageWeight * 52) / 1000;

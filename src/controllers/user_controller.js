@@ -165,8 +165,8 @@ export async function updateUserCarbonFootprint(user) {
       .filter((trip) => { return trip !== null && typeof trip.actualCarbonFootprint === 'number'; })
       .reduce((total, trip) => { return total + trip.actualCarbonFootprint; }, 0);
 
-    user.carbonFootprint.food = user.footprintData.food.reduce((total, consumption) => { return total + getFoodEmissionWeekly(consumption); }, 0);
-    user.carbonFootprint.house = getHouseEmissionEstimated(user.footprintData.house);
+    newFootprint.food = user.footprintData.food.reduce((total, consumption) => { return total + getFoodEmissionWeekly(consumption); }, 0);
+    newFootprint.house = getHouseEmissionEstimated(user.footprintData.house);
     newFootprint.total = newFootprint.travel + user.carbonFootprint.food + user.carbonFootprint.house;
 
     user.carbonFootprint = newFootprint;

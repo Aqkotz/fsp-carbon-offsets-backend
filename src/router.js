@@ -30,10 +30,6 @@ router.post('/goals/fail/:id', requireAuth, UserGoals.failGoal);
 
 router.post('/updatestreaks', Users.updateStreaks);
 
-router.post('/stops', requireAuth, Users.setStops);
-
-router.get('/stops', requireAuth, Users.getStops);
-
 router.get('/carbonfootprint', requireAuth, Users.getCarbonFootprint);
 
 router.post('/trips', requireAuth, Trips.createTrip);
@@ -70,12 +66,12 @@ router.get('/teams/carbonfootprint', requireAuth, Team.getCarbonFootprint);
 
 router.post('/teams/leave', requireAuth, Team.leaveTeam);
 
-// router.post('/user/foodemissions', Users.getUserFoodEmission);
+router.post('/user/foodemissions', Users.getUserFoodEmission);
 
-// router.post('/user/houseemissions', Users.getUserHouseEmission);
+router.post('/user/houseemissions', Users.getUserHouseEmission);
 
-// router.post('/food', requireAuth, Users.addFoodWeeklyConsumption);
+router.post('/food', requireAuth, Users.addFoodWeeklyConsumption);
 
-// router.post('/house', requireAuth, Users.setHouseData);
+router.post('/house', requireAuth, Users.setHouseData);
 
 export default router;

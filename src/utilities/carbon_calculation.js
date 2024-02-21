@@ -225,7 +225,7 @@ const foodSimpleData = {
     wasteEmissionFactor: 'plastic_film',
     averageWeight: 130,
   },
-  fruits: {
+  fruit: {
     emission: 1.3,
     wasteEmissionFactor: 'plastic_film',
     averageWeight: 200,

@@ -1,6 +1,6 @@
 /* eslint-disable import/prefer-default-export */
 
-const WEEK_RANGE = { min: 0, max: 14 };
+const WEEK_RANGE = { min: 0, max: 21 };
 
 const foodData = {
   foods: {
@@ -445,6 +445,7 @@ export function getFoodEmissionSimple(consumption) {
   let none = false;
   const data = foodData;
 
+  console.log('no consumption');
   if (!consumption) return null;
 
   Object.entries(foodSimpleData).forEach(([food, _]) => {

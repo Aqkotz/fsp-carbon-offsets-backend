@@ -167,7 +167,7 @@ export async function updateUserCarbonFootprint(user) {
 
     newFootprint.food = user.footprintData.food.reduce((total, consumption) => { return total + getFoodEmissionWeekly(consumption); }, 0);
     newFootprint.house = getHouseEmissionEstimated(user.footprintData.house);
-    newFootprint.total = newFootprint.travel + user.carbonFootprint.food + user.carbonFootprint.house;
+    newFootprint.total = newFootprint.travel + newFootprint.food + newFootprint.house;
 
     user.carbonFootprint = newFootprint;
     user.carbonFootprint_isStale = false;

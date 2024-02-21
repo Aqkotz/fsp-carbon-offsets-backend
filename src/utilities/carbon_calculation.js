@@ -447,6 +447,7 @@ export function getFoodEmissionSimple(consumption) {
 
   Object.entries(consumption).forEach(([food, amount]) => {
     if (amount < WEEK_RANGE.min || amount > WEEK_RANGE.max) { none = true; }
+    if (!foodSimpleData[food]) throw new Error(`Food ${food} not found in foodSimpleData`);
     const yearlyWeight = (amount * foodSimpleData[food].averageWeight * 52) / 1000;
     emission += yearlyWeight * foodSimpleData[food].emission;
     const wasteType = foodSimpleData[food].wasteEmissionFactor;

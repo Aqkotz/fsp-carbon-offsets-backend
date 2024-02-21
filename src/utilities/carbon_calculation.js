@@ -445,6 +445,8 @@ export function getFoodEmissionSimple(consumption) {
   let none = false;
   const data = foodData;
 
+  if (!consumption) return null;
+
   Object.entries(foodSimpleData).forEach(([food, _]) => {
     const amount = consumption[food];
     if (amount < WEEK_RANGE.min || amount > WEEK_RANGE.max) { none = true; }

@@ -39,12 +39,7 @@ const localLogin = new LocalStrategy(localOptions, async (netid, password, done)
     // isMatch is a boolean that stores the result of this comparison
     // isMatch = await user.comparePassword(password);
     // if they don't match, return done with false
-    if (true) {
-      return done(null, false);
-    } else {
-      // if they do match, call done with the user
-      return done(null, user);
-    }
+    return done(null, false);
   } catch (error) {
     // if there are any errors, call done with the error
     return done(error);

@@ -7,9 +7,25 @@ const UserSchema = new Schema({
   role: { type: String, default: 'user' },
   goals: [{ type: Schema.Types.ObjectId, ref: 'UserGoal' }],
   name: { type: String },
-  flightStops: { type: [String], default: ['', 'BER'] },
-  carbonFootprint: { type: Number, default: 0 },
+  carbonFootprint: {
+    total: { type: Number, default: 0 },
+    travel: { type: Number, default: 0 },
+    house: { type: Number, default: 0 },
+    food: { type: Number, default: 0 },
+  },
   carbonFootprint_isStale: { type: Boolean, default: true },
+  trips: [{ type: Schema.Types.ObjectId, ref: 'Trip' }],
+  adminOf: { type: Schema.Types.ObjectId, ref: 'Team' },
+  footprintData: {
+    house: {
+      surface: { type: Number, default: 0 },
+      built: { type: String, default: '' },
+      type: { type: String, default: '' },
+      heater: { type: String, default: '' },
+    },
+    food: { type: [Schema.Types.Mixed], default: [{}] },
+  },
+  team: { type: Schema.Types.ObjectId, ref: 'Team' },
 }, {
   toObject: { virtuals: true },
   toJSON: { virtuals: true },

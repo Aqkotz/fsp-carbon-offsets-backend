@@ -6,9 +6,9 @@ import morgan from 'morgan';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import bodyParser from 'body-parser';
-import schedule from 'node-schedule';
+// import schedule from 'node-schedule';
 import apiRoutes from './router';
-import User from './models/user_model';
+// import User from './models/user_model';
 
 dotenv.config({ silent: true });
 
@@ -60,10 +60,10 @@ async function startServer() {
 
     console.log(`Listening on port ${port}`);
 
-    schedule.scheduleJob('00 05 * * *', async () => {
-      console.log('Scheduler triggered at', new Date().toString());
-      await User.updateStreaks();
-    });
+    // schedule.scheduleJob('00 05 * * *', async () => {
+    //   console.log('Scheduler triggered at', new Date().toString());
+    //   await User.updateStreaks();
+    // });
   } catch (error) {
     console.error(error);
   }

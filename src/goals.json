@@ -1,0 +1,55 @@
+{
+    "goals": [
+        {
+            "name": "Reduce Energy Consumption",
+            "levels": [
+                {
+                    "level": "Beginner",
+                    "carbonOffset": 100
+                },
+                {
+                    "level": "Intermediate",
+                    "carbonOffset": 250
+                },
+                {
+                    "level": "Advanced",
+                    "carbonOffset": 500
+                }
+            ]
+        },
+        {
+            "name": "Adopt Sustainable Transportation",
+            "levels": [
+                {
+                    "level": "Beginner",
+                    "carbonOffset": 150
+                },
+                {
+                    "level": "Intermediate",
+                    "carbonOffset": 300
+                },
+                {
+                    "level": "Advanced",
+                    "carbonOffset": 600
+                }
+            ]
+        },
+        {
+            "name": "Reduce Waste Generation",
+            "levels": [
+                {
+                    "level": "Beginner",
+                    "carbonOffset": 50
+                },
+                {
+                    "level": "Intermediate",
+                    "carbonOffset": 100
+                },
+                {
+                    "level": "Advanced",
+                    "carbonOffset": 200
+                }
+            ]
+        }
+    ]
+}

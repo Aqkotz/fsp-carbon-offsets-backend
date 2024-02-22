@@ -3,6 +3,8 @@ import axios from 'axios';
 import xml2js from 'xml2js';
 import User from '../models/user_model';
 import UserGoal from '../models/user_goal_model';
+import Trip from '../models/trip_model';
+import { getFoodEmissionWeekly, getHouseEmissionEstimated } from '../utilities/carbon_calculation';
 
 export const getUsers = async (req, res) => {
   try {
@@ -25,18 +27,15 @@ export const getUser = async (req, res) => {
 };
 
 export const signin = (user) => {
-  // Here we log the user in and return a token
   return tokenForUser(user);
 };
 
 export async function createUser({
   netid, password, name, goals,
 }) {
-  // See if a user with the given netid exists
   const existingUser = await User.findOne({ netid });
   if (existingUser) {
     console.log('existing user!!!');
-    // If a user with netid does exist, return an error
     throw new Error('Netid is in use');
   }
 
@@ -149,96 +148,121 @@ export const updateStreaks = async (req, res) => {
   }
 };
 
-export async function setStops(req, res) {
+export async function updateUserCarbonFootprint(user) {
   try {
-    const { stops } = req.body;
-    console.log('stops: ', stops);
-    const user = await User.findById(req.user._id);
-    const uniqueStops = [...new Set(stops)].map((stop) => { return stop.toUpperCase(); });
-
-    // Check if stops are unique
-    if (uniqueStops.length !== stops.length) {
-      return res.status(400).json({ error: 'Stops must be unique' });
-    }
-
-    // Check if each stop is exactly three letters long
-    const invalidStops = uniqueStops.filter((stop) => { return stop.length !== 3; });
-    if (invalidStops.length > 0) {
-      return res.status(400).json({ error: 'Each stop must be exactly three letters long' });
-    }
-
-    user.flightStops = stops;
-    user.carbonFootprint_isStale = true;
-    await user.save();
-    return res.json(user.flightStops);
-  } catch (error) {
-    return res.status(400).json({ error: error.message });
-  }
-}
-
-export async function getStops(req, res) {
-  try {
-    const user = await User.findById(req.user._id);
-    return res.json(user.flightStops);
-  } catch (error) {
-    return res.status(400).json({ error: error.message });
-  }
-}
-
-export async function updateCarbonFootprint(user) {
-  try {
-    const { flightStops } = user;
-    const stops = flightStops.map((stop) => { return stop.toUpperCase(); });
-    if (stops.length < 2 || stops[0] === '') {
-      user.carbonFootprint = 0;
-      user.carbonFootprint_isStale = false;
-      await user.save();
-      return user.carbonFootprint;
-    }
-    const legs = await Promise.all(stops.map(async (stop, index) => {
-      if (index === stops.length - 1) {
-        return null;
+    // Update carbon footprints for all trips
+    await Promise.all(user.trips.map(async (trip) => {
+      if (trip.isStale) {
+        console.log('Updating carbon footprint for trip: ', trip._id);
+        return Trip.updateCarbonFootprint(trip);
       }
-      try {
-        const response = await axios.post('https://beta4.api.climatiq.io/travel/distance', {
-          travel_mode: 'air',
-          origin: {
-            iata: stop,
-          },
-          destination: {
-            iata: stops[index + 1],
-          },
-        }, {
-          headers: {
-            Authorization: `Bearer ${process.env.CLIMATIQ_API_KEY}`,
-          },
-        });
-        return response.data.co2e;
-      } catch (error) {
-        console.error('Error fetching data for stop:', stop, error);
-        return null;
-      }
+      return Promise.resolve();
     }));
 
-    const footprint = legs.filter((leg) => { return leg !== null; }).reduce((a, b) => { return a + b; }, 0);
-    console.log('footprint: ', footprint, 'kg');
-    user.carbonFootprint = footprint;
+    const newFootprint = {};
+
+    newFootprint.travel = user.trips
+      .filter((trip) => { return trip !== null && typeof trip.actualCarbonFootprint === 'number'; })
+      .reduce((total, trip) => { return total + trip.actualCarbonFootprint; }, 0);
+
+    console.log('user.footprintData.food: ', user.footprintData.food);
+    console.log('weeklyEmission: ', getFoodEmissionWeekly(user.footprintData.food[0]));
+    newFootprint.food = user.footprintData.food.reduce((total, consumption) => { return total + getFoodEmissionWeekly(consumption) ?? 0; }, 0) ?? 0;
+    newFootprint.food = newFootprint.food ? newFootprint.food : 0;
+    newFootprint.house = getHouseEmissionEstimated(user.footprintData.house) ?? 0;
+    newFootprint.total = newFootprint.travel + newFootprint.food + newFootprint.house;
+
+    user.carbonFootprint = newFootprint;
     user.carbonFootprint_isStale = false;
     await user.save();
-    return user.carbonFootprint;
   } catch (error) {
-    throw new Error(error);
+    console.error('Error updating carbon footprints: ', error);
+    throw error; // Rethrow the error to be handled by the caller
   }
 }
 
 export async function getCarbonFootprint(req, res) {
   try {
-    const user = await User.findById(req.user._id);
+    let user = await User.findById(req.user._id).populate('trips');
     if (user.carbonFootprint_isStale) {
-      await updateCarbonFootprint(user);
+      console.log(`Updating carbon footprint for user ${user.name}...`);
+      await updateUserCarbonFootprint(user);
+      user = await User.findById(req.user._id);
     }
     return res.json(user.carbonFootprint);
   } catch (error) {
+    console.error('Failed to get carbon footprint: ', error);
+    return res.status(400).json({ error: error.message });
+  }
+}
+
+export async function getUserFoodEmission(req, res) {
+  try {
+    const { consumption } = req.body;
+    const emission = getFoodEmissionWeekly(consumption);
+    return res.json(emission);
+  } catch (error) {
+    console.error('Failed to get food emission: ', error);
+    return res.status(400).json({ error: error.message });
+  }
+}
+
+export async function getUserHouseEmission(req, res) {
+  try {
+    const { house } = req.body;
+    const emission = getHouseEmissionEstimated(house);
+    return res.json(emission);
+  } catch (error) {
+    console.error('Failed to get house emission: ', error);
+    return res.status(400).json({ error: error.message });
+  }
+}
+
+export async function addFoodWeeklyConsumption(req, res) {
+  try {
+    const user = await User.findById(req.user._id);
+    const { consumption } = req.body;
+    consumption.date = new Date();
+    user.footprintData.food.push(consumption);
+    user.carbonFootprint_isStale = true;
+    await user.save();
+    return res.json(user.footprintData.food);
+  } catch (error) {
+    console.error('Failed to add food consumption: ', error);
+    return res.status(400).json({ error: error.message });
+  }
+}
+
+export async function setHouseData(req, res) {
+  try {
+    const user = await User.findById(req.user._id);
+    const { house } = req.body;
+    user.footprintData.house = house;
+    user.carbonFootprint_isStale = true;
+    await user.save();
+    return res.json(user.footprintData.house);
+  } catch (error) {
+    console.error('Failed to set house data: ', error);
+    return res.status(400).json({ error: error.message });
+  }
+}
+
+export async function getFood(req, res) {
+  try {
+    const user = await User.findById(req.user._id);
+    return res.json(user.footprintData.food);
+  } catch (error) {
+    console.error('Failed to get food consumption: ', error);
+    return res.status(400).json({ error: error.message });
+  }
+}
+
+export async function getHouse(req, res) {
+  try {
+    const user = await User.findById(req.user._id);
+    return res.json(user.footprintData.house);
+  } catch (error) {
+    console.error('Failed to get house data: ', error);
     return res.status(400).json({ error: error.message });
   }
 }

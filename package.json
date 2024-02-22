@@ -2,7 +2,7 @@
   "name": "express babel eslint node starter",
   "version": "6.0.0",
   "description": "",
-  "author": "CS52",
+  "author": "Andy and Chloe",
   "main": "src/server.js",
   "scripts": {
     "test": "eslint src",
@@ -24,7 +24,6 @@
     "@babel/core": "^7.21.8",
     "@babel/node": "^7.20.7",
     "@babel/preset-env": "^7.21.5",
-    "@cco2/carbon-weight": "^1.5.9",
     "axios": "^1.6.5",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.2",

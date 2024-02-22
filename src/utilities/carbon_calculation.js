@@ -505,6 +505,7 @@ export function getHouseEmissionEstimated(house) {
 
   // Get the factor emission from study - kWh/(m².year)
   const emissionFactor = data.consumptionFactors?.[house.built]?.[house.type]?.[house.heater]?.emissionFactor;
+  console.log(`emissionFactor for ${house.built}: ${emissionFactor}`);
   if (!emissionFactor || emissionFactor < 0) return null;
 
   // Retrieve the combustible Factor - kgCO2e/kW
@@ -521,5 +522,5 @@ export function getHouseEmissionEstimated(house) {
   // ) climateCoeff = data.climateCoeffs[region.FACTOR];
 
   // Compute
-  return house.surface * emissionFactor * combustibleFactor * climateCoeff;
+  return (house.surface * emissionFactor * combustibleFactor * climateCoeff) / 52;
 }

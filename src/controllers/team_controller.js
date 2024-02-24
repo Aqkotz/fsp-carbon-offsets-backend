@@ -92,14 +92,22 @@ export async function updateTeamCarbonFootprint(team) {
 
     const newCarbonFootprint = {};
 
-    newCarbonFootprint.travel = team.members
+    newCarbonFootprint.weekly.travel = team.members
       .reduce((total, user) => { return total + user.carbonFootprint.weekly.travel; }, 0);
-    newCarbonFootprint.food = team.members
+    newCarbonFootprint.weekly.food = team.members
       .reduce((total, user) => { return total + user.carbonFootprint.weekly.food; }, 0);
-    newCarbonFootprint.house = team.members
+    newCarbonFootprint.weekly.house = team.members
       .reduce((total, user) => { return total + user.carbonFootprint.weekly.house; }, 0);
 
-    newCarbonFootprint.total = newCarbonFootprint.travel + newCarbonFootprint.food + newCarbonFootprint.house;
+    newCarbonFootprint.allTime.travel = team.members
+      .reduce((total, user) => { return total + user.carbonFootprint.allTime.travel; }, 0);
+    newCarbonFootprint.allTime.food = team.members
+      .reduce((total, user) => { return total + user.carbonFootprint.allTime.food; }, 0);
+    newCarbonFootprint.allTime.house = team.members
+      .reduce((total, user) => { return total + user.carbonFootprint.allTime.house; }, 0);
+
+    newCarbonFootprint.weekly.total = newCarbonFootprint.weekly.travel + newCarbonFootprint.weekly.food + newCarbonFootprint.weekly.house;
+    newCarbonFootprint.allTime.total = newCarbonFootprint.allTime.travel + newCarbonFootprint.allTime.food + newCarbonFootprint.allTime.house;
     team.carbonFootprint = newCarbonFootprint;
 
     await team.save();

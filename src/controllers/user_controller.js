@@ -180,7 +180,7 @@ export async function updateUserCarbonFootprint(user) {
       .reduce((total, trip) => { return total + trip.actualCarbonFootprint; }, 0);
 
     newFootprint.allTime.food = getFoodEmissionAllTime(user.footprintData.food) ?? 0;
-    newFootprint.weekly.food = user.footprintData.food[-1].date >= weekStartDate ? getFoodEmissionWeekly(user.footprintData.food[-1]) ?? 0 : 0;
+    // newFootprint.weekly.food = user.footprintData.food[-1].date >= weekStartDate ? getFoodEmissionWeekly(user.footprintData.food[-1]) ?? 0 : 0;
 
     newFootprint.allTime.house = getHouseEmissionAllTime(user.footprintData.house, programDays) ?? 0;
     newFootprint.weekly.house = getHouseEmissionWeekly(user.footprintData.house) ?? 0;

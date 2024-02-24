@@ -68,12 +68,12 @@ router.post('/house', requireAuth, Users.setHouseData);
 
 router.get('/house', requireAuth, Users.getHouse);
 
-router.get('/themes', Goal.getThemes);
+// router.get('/themes', Goal.getThemes);
 
-router.get('/goals/:theme', Goal.getGoals);
+// router.get('/goals/:theme', Goal.getGoals);
 
-router.post('/goals', requireAuth, Goal.setGoal);
+// router.post('/goals', requireAuth, Goal.setGoal);
 
-router.get('/goals', requireAuth, Goal.getUserGoals);
+// router.get('/goals', requireAuth, Goal.getUserGoals);
 
 export default router;

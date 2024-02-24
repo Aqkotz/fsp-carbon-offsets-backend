@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import jwt from 'jwt-simple';
 import axios from 'axios';
 import xml2js from 'xml2js';
@@ -179,8 +180,8 @@ export async function updateUserCarbonFootprint(user) {
       .filter((trip) => { return trip !== null && typeof trip.actualCarbonFootprint === 'number' && trip.date > weekStartDate; })
       .reduce((total, trip) => { return total + trip.actualCarbonFootprint; }, 0);
 
-    newFootprint.allTime.food = getFoodEmissionAllTime(user.footprintData.food) ?? 0;
-    // newFootprint.weekly.food = user.footprintData.food[-1].date >= weekStartDate ? getFoodEmissionWeekly(user.footprintData.food[-1]) ?? 0 : 0;
+    newFootprint.allTime.food = 0; // getFoodEmissionAllTime(user.footprintData.food) ?? 0;
+    newFootprint.weekly.food = 0; // user.footprintData.food[-1].date >= weekStartDate ? getFoodEmissionWeekly(user.footprintData.food[-1]) ?? 0 : 0;
 
     newFootprint.allTime.house = getHouseEmissionAllTime(user.footprintData.house, programDays) ?? 0;
     newFootprint.weekly.house = getHouseEmissionWeekly(user.footprintData.house) ?? 0;

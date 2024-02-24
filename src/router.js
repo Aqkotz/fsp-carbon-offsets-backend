@@ -1,9 +1,9 @@
 import { Router } from 'express';
 import * as Users from './controllers/user_controller';
-import * as UserGoals from './controllers/user_goal_controller';
 import * as Trips from './controllers/trip_controller';
 import * as Post from './controllers/post_controller';
 import * as Team from './controllers/team_controller';
+import * as Goal from './controllers/goal_controller';
 import { requireAuth, requireSignin } from './services/passport';
 
 const router = Router();
@@ -17,16 +17,6 @@ router.get('/user', requireAuth, Users.getUser);
 router.post('/validate', Users.validateTicket);
 
 router.post('/signin', requireSignin, Users.signin);
-
-router.post('/goals', requireAuth, UserGoals.setGoal);
-
-router.get('/goals', requireAuth, UserGoals.getUserGoals);
-
-router.delete('/goals/:id', requireAuth, UserGoals.deleteGoal);
-
-router.post('/goals/complete/:id', requireAuth, UserGoals.completeGoal);
-
-router.post('/goals/fail/:id', requireAuth, UserGoals.failGoal);
 
 router.post('/updatestreaks', Users.updateStreaks);
 
@@ -77,5 +67,13 @@ router.get('/food', requireAuth, Users.getFood);
 router.post('/house', requireAuth, Users.setHouseData);
 
 router.get('/house', requireAuth, Users.getHouse);
+
+router.get('/themes', Goal.getThemes);
+
+router.get('/goals/:theme', Goal.getGoals);
+
+router.post('/goals', requireAuth, Goal.setGoal);
+
+router.get('/goals', requireAuth, Goal.getUserGoals);
 
 export default router;

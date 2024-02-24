@@ -4,7 +4,10 @@ import xml2js from 'xml2js';
 import User from '../models/user_model';
 import UserGoal from '../models/user_goal_model';
 import Trip from '../models/trip_model';
-import { getFoodEmissionWeekly, getHouseEmissionEstimated } from '../utilities/carbon_calculation';
+import Team from '../models/team_model';
+import {
+  getFoodEmissionWeekly, getFoodEmissionAllTime, getHouseEmissionWeekly, getHouseEmissionAllTime,
+} from '../utilities/carbon_calculation';
 
 export const getUsers = async (req, res) => {
   try {
@@ -159,18 +162,31 @@ export async function updateUserCarbonFootprint(user) {
       return Promise.resolve();
     }));
 
-    const newFootprint = {};
+    const team = await Team.findById(user.team);
+    const programDays = !team ? 7 : Team.programDurationDays(team);
+    const week = !team ? 1 : Team.weekForTeam(team);
+    const weekStartDate = !team ? Date.now() - 7 * 24 * 60 * 60 * 1000 : team.startDate + (week - 1) * 7 * 24 * 60 * 60 * 1000;
 
-    newFootprint.travel = user.trips
+    const newFootprint = {
+      weekly: {},
+      allTime: {},
+    };
+
+    newFootprint.allTime.travel = user.trips
       .filter((trip) => { return trip !== null && typeof trip.actualCarbonFootprint === 'number'; })
       .reduce((total, trip) => { return total + trip.actualCarbonFootprint; }, 0);
+    newFootprint.weekly.travel = user.trips
+      .filter((trip) => { return trip !== null && typeof trip.actualCarbonFootprint === 'number' && trip.date > weekStartDate; })
+      .reduce((total, trip) => { return total + trip.actualCarbonFootprint; }, 0);
 
-    console.log('user.footprintData.food: ', user.footprintData.food);
-    console.log('weeklyEmission: ', getFoodEmissionWeekly(user.footprintData.food[0]));
-    newFootprint.food = user.footprintData.food.reduce((total, consumption) => { return total + getFoodEmissionWeekly(consumption) ?? 0; }, 0) ?? 0;
-    newFootprint.food = newFootprint.food ? newFootprint.food : 0;
-    newFootprint.house = getHouseEmissionEstimated(user.footprintData.house) ?? 0;
-    newFootprint.total = newFootprint.travel + newFootprint.food + newFootprint.house;
+    newFootprint.allTime.food = getFoodEmissionAllTime(user.footprintData.food) ?? 0;
+    newFootprint.weekly.food = user.footprintData.food[-1].date >= weekStartDate ? getFoodEmissionWeekly(user.footprintData.food[-1]) ?? 0 : 0;
+
+    newFootprint.allTime.house = getHouseEmissionAllTime(user.footprintData.house, programDays) ?? 0;
+    newFootprint.weekly.house = getHouseEmissionWeekly(user.footprintData.house) ?? 0;
+
+    newFootprint.allTime.total = newFootprint.allTime.travel + newFootprint.allTime.food + newFootprint.allTime.house;
+    newFootprint.weekly.total = newFootprint.weekly.travel + newFootprint.weekly.food + newFootprint.weekly.house;
 
     user.carbonFootprint = newFootprint;
     user.carbonFootprint_isStale = false;
@@ -210,7 +226,7 @@ export async function getUserFoodEmission(req, res) {
 export async function getUserHouseEmission(req, res) {
   try {
     const { house } = req.body;
-    const emission = getHouseEmissionEstimated(house);
+    const emission = getHouseEmissionAllTime(house);
     return res.json(emission);
   } catch (error) {
     console.error('Failed to get house emission: ', error);
@@ -225,6 +241,9 @@ export async function addFoodWeeklyConsumption(req, res) {
     consumption.date = new Date();
     user.footprintData.food.push(consumption);
     user.carbonFootprint_isStale = true;
+    const team = await Team.findById(user.team);
+    team.carbonFootprint_isStale = true;
+    team.save();
     await user.save();
     return res.json(user.footprintData.food);
   } catch (error) {
@@ -239,6 +258,9 @@ export async function setHouseData(req, res) {
     const { house } = req.body;
     user.footprintData.house = house;
     user.carbonFootprint_isStale = true;
+    const team = await Team.findById(user.team);
+    team.carbonFootprint_isStale = true;
+    team.save();
     await user.save();
     return res.json(user.footprintData.house);
   } catch (error) {

@@ -6,8 +6,15 @@ const teamSchema = new mongoose.Schema({
   members: [{ type: Object, required: true, ref: 'User' }],
   admins: [{ type: Object, required: true, ref: 'User' }],
   joinCode: { type: String },
-  carbonFootprint: { type: Number, default: 0 },
+  carbonFootprint: {
+    travel: { type: Number },
+    house: { type: Number },
+    food: { type: Number },
+    total: { type: Number },
+  },
   carbonFootprint_isStale: { type: Boolean, default: true },
+  startDate: { type: Date, default: Date.now, required: true },
+  // currentWeek: { type: Number, default: 0 },
 }, {
   toObject: { virtuals: true },
   toJSON: { virtuals: true },

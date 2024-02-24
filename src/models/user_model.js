@@ -4,8 +4,7 @@ import bcrypt from 'bcryptjs';
 const UserSchema = new Schema({
   netid: { type: String, unique: true },
   password: { type: String },
-  role: { type: String, default: 'user' },
-  goals: [{ type: Schema.Types.ObjectId, ref: 'UserGoal' }],
+  goals: [{ type: Schema.Types.ObjectId, ref: 'Goal' }],
   name: { type: String },
   carbonFootprint: {
     total: { type: Number, default: 0 },

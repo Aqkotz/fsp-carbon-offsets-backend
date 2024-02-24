@@ -6,9 +6,9 @@ import morgan from 'morgan';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import bodyParser from 'body-parser';
-// import schedule from 'node-schedule';
+import schedule from 'node-schedule';
 import apiRoutes from './router';
-// import User from './models/user_model';
+import Team from './models/team_model';
 
 dotenv.config({ silent: true });
 
@@ -60,10 +60,18 @@ async function startServer() {
 
     console.log(`Listening on port ${port}`);
 
-    // schedule.scheduleJob('00 05 * * *', async () => {
-    //   console.log('Scheduler triggered at', new Date().toString());
-    //   await User.updateStreaks();
-    // });
+    // Schedule an event to trigger every night at midnight EST (5 AM GMT)
+    schedule.scheduleJob('0 5 * * *', () => {
+      console.log('Event triggered at midnight EST every night');
+      // Your logic here
+    });
+
+    // Schedule an event to trigger every Sunday at midnight EST (5 AM GMT on Sunday in GMT)
+    schedule.scheduleJob('0 5 * * 0', () => {
+      console.log('Event triggered at midnight EST every Sunday');
+      Team.
+      // Your logic here
+    });
   } catch (error) {
     console.error(error);
   }

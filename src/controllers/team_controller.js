@@ -90,10 +90,17 @@ export async function updateTeamCarbonFootprint(team) {
       return Promise.resolve();
     }));
 
-    console.log(team.members);
+    const newCarbonFootprint = {};
 
-    team.carbonFootprint = team.members
-      .reduce((total, user) => { return total + user.carbonFootprint.total; }, 0);
+    newCarbonFootprint.travel = team.members
+      .reduce((total, user) => { return total + user.carbonFootprint.weekly.travel; }, 0);
+    newCarbonFootprint.food = team.members
+      .reduce((total, user) => { return total + user.carbonFootprint.weekly.food; }, 0);
+    newCarbonFootprint.house = team.members
+      .reduce((total, user) => { return total + user.carbonFootprint.weekly.house; }, 0);
+
+    newCarbonFootprint.total = newCarbonFootprint.travel + newCarbonFootprint.food + newCarbonFootprint.house;
+    team.carbonFootprint = newCarbonFootprint;
 
     await team.save();
   } catch (error) {
@@ -120,4 +127,29 @@ export async function getCarbonFootprint(req, res) {
     console.error('Failed to get carbon footprint: ', error);
     return res.status(400).json({ error: error.message });
   }
+}
+
+// export async function updateWeeks() {
+//   try {
+//     const teams = await Team.find({});
+//     teams.forEach((team) => {
+//       team.members.forEach((member) => {
+//         member.carbonFootprint_isStale = true;
+//         member.save();
+//       });
+//       team.week += 1;
+//       team.carbonFootprint_isStale = true;
+//       team.save();
+//     });
+//   } catch (error) {
+//     console.log(error);
+//   }
+// }
+
+export async function weekForTeam(team) {
+  return Math.floor((Date.now() - team.startDate) / (1000 * 60 * 60 * 24 * 7)) + 1;
+}
+
+export async function programDurationDays(team) {
+  return Math.floor((Date.now() - team.startDate) / (1000 * 60 * 60 * 24));
 }

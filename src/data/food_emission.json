@@ -31,7 +31,7 @@
         "cream": 3.5,
         "goat": 3.6,
         "hard": 5.6,
-        "soft": 4.3
+        "softDrinks": 4.3
       },
       "wasteEmissionFactor": "fat_butter"
     },
@@ -79,7 +79,7 @@
       },
       "wasteEmissionFactor": "paper"
     },
-    "meatRed": {
+    "redMeat": {
       "averageWeight": 150,
       "averageWeightDay": {
         "delicatessen": 40.9,
@@ -96,7 +96,7 @@
       },
       "wasteEmissionFactor": "plastic_film"
     },
-    "meatWhite": {
+    "whiteMeat": {
       "averageWeight": 150,
       "averageWeightDay": {
         "meat": 52.9
@@ -126,7 +126,7 @@
       },
       "wasteEmissionFactor": "plastic_film"
     },
-    "soft": {
+    "softDrinks": {
       "averageWeight": 150,
       "averageWeightDay": {
         "juice": 127,

@@ -1,6 +1,7 @@
 import axios from 'axios';
 import Trip from '../models/trip_model';
 import User from '../models/user_model';
+import Team from '../models/team_model';
 
 // Update a trip
 export const updateTrip = async (req, res) => {
@@ -12,6 +13,9 @@ export const updateTrip = async (req, res) => {
     }
     const user = await User.findById(req.user._id);
     user.carbonFootprint_isStale = true;
+    const team = await Team.findById(user.team);
+    team.carbonFootprint_isStale = true;
+    team.save();
     await user.save();
     return res.json(trip);
   } catch (error) {
@@ -27,6 +31,9 @@ export const deleteTrip = async (req, res) => {
     const trip = await Trip.findByIdAndDelete(id);
     user.trips.pull(trip);
     user.carbonFootprint_isStale = true;
+    const team = await Team.findById(user.team);
+    team.carbonFootprint_isStale = true;
+    team.save();
     await user.save();
     if (!trip) {
       return res.status(404).json({ error: 'Trip not found' });
@@ -130,6 +137,9 @@ export const createTrip = async (req, res) => {
     await trip.save();
     user.trips.push(trip);
     user.carbonFootprint_isStale = true;
+    const team = await Team.findById(user.team);
+    team.carbonFootprint_isStale = true;
+    team.save();
     await user.save();
     return res.status(201).json(trip);
   } catch (error) {

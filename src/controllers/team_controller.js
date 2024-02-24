@@ -90,7 +90,10 @@ export async function updateTeamCarbonFootprint(team) {
       return Promise.resolve();
     }));
 
-    const newCarbonFootprint = {};
+    const newCarbonFootprint = {
+      weekly: {},
+      allTime: {},
+    };
 
     newCarbonFootprint.weekly.travel = team.members
       .reduce((total, user) => { return total + user.carbonFootprint.weekly.travel; }, 0);

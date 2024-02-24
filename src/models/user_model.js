@@ -30,7 +30,7 @@ const UserSchema = new Schema({
       type: { type: String, default: '' },
       heater: { type: String, default: '' },
     },
-    food: { type: [Schema.Types.Mixed], default: [{}] },
+    food: { type: [Schema.Types.Mixed], default: [] },
   },
   team: { type: Schema.Types.ObjectId, ref: 'Team' },
 }, {

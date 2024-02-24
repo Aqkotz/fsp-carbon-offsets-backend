@@ -146,10 +146,10 @@ export async function getCarbonFootprint(req, res) {
 //   }
 // }
 
-export async function weekForTeam(team) {
+export function weekForTeam(team) {
   return Math.floor((Date.now() - team.startDate) / (1000 * 60 * 60 * 24 * 7)) + 1;
 }
 
-export async function programDurationDays(team) {
+export function programDurationDays(team) {
   return Math.floor((Date.now() - team.startDate) / (1000 * 60 * 60 * 24));
 }

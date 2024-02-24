@@ -8,7 +8,7 @@ import dotenv from 'dotenv';
 import bodyParser from 'body-parser';
 import schedule from 'node-schedule';
 import apiRoutes from './router';
-import Team from './models/team_model';
+// import Team from './models/team_model';
 
 dotenv.config({ silent: true });
 
@@ -69,7 +69,6 @@ async function startServer() {
     // Schedule an event to trigger every Sunday at midnight EST (5 AM GMT on Sunday in GMT)
     schedule.scheduleJob('0 5 * * 0', () => {
       console.log('Event triggered at midnight EST every Sunday');
-      Team.
       // Your logic here
     });
   } catch (error) {

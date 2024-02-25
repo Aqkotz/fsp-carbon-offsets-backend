@@ -123,15 +123,14 @@ export async function updateTeamCarbonFootprint(team) {
 export async function getCarbonFootprint(req, res) {
   try {
     const user = await User.findById(req.user._id);
-    const { teamId } = req.params;
-    let team = await Team.findById(teamId).populate('members');
+    let team = await Team.findById(user.team).populate('members');
     if (!team.members.map((member) => { return member.id; }).includes(user.id)) {
       return res.status(400).json({ error: 'User not in team' });
     }
     if (team.carbonFootprint_isStale || team.members.any((member) => { return member.carbonFootprint_isStale; })) {
       console.log(`Updating carbon footprint for team ${team.name}...`);
       await updateTeamCarbonFootprint(team);
-      team = await Team.findById(teamId);
+      team = await Team.findById(user.team);
     }
     return res.json(team.carbonFootprint);
   } catch (error) {

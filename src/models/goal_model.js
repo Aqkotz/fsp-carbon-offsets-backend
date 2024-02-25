@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const goalSchema = new mongoose.Schema({
   description: { type: String },
@@ -19,4 +19,4 @@ const goalSchema = new mongoose.Schema({
 
 const Goal = mongoose.model('Goal', goalSchema);
 
-module.exports = Goal;
+export default Goal;

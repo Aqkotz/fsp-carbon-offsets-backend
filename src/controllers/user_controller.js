@@ -1,3 +1,4 @@
+/* eslint-disable no-nested-ternary */
 /* eslint-disable no-unused-vars */
 import jwt from 'jwt-simple';
 import axios from 'axios';
@@ -166,7 +167,9 @@ export async function updateUserCarbonFootprint(user) {
     const team = await Team.findById(user.team);
     const programDays = !team ? 7 : Math.floor((Date.now() - team.startDate) / (1000 * 60 * 60 * 24));
     const week = !team ? 1 : Math.floor((Date.now() - team.startDate) / (1000 * 60 * 60 * 24 * 7)) + 1;
-    const weekStartDate = !team ? Date.now() - 7 * 24 * 60 * 60 * 1000 : team.startDate + (week - 1) * 7 * 24 * 60 * 60 * 1000;
+    const startDateTimestamp = !team ? 0 : (team.startDate instanceof Date ? team.startDate.getTime() : team.startDate);
+    const weekStartDateTimestamp = !team ? 0 : startDateTimestamp + (week - 1) * 7 * 24 * 60 * 60 * 1000;
+    const weekStartDate = !team ? Date.now() - 7 * 24 * 60 * 60 * 1000 : new Date(weekStartDateTimestamp);
 
     const newFootprint = {
       weekly: {},
@@ -216,6 +219,12 @@ export async function getCarbonFootprint(req, res) {
       await updateUserCarbonFootprint(user);
       user = await User.findById(req.user._id);
     }
+    // let team = user.team ? await Team.findById(user.team) : null;
+    // if (team && team.carbonFootprint_isStale) {
+    //   console.log(`Updating carbon footprint for team ${team.name}...`);
+    //   await Team.updateTeamCarbonFootprint(team);
+    //   team = await Team.findById(user.team);
+    // }
     return res.json(user.carbonFootprint);
   } catch (error) {
     console.error('Failed to get carbon footprint: ', error);

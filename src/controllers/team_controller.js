@@ -135,11 +135,7 @@ export async function getCarbonFootprint(req, res) {
       await updateTeamCarbonFootprint(team);
       team = await Team.findById(user.team);
     }
-    const footprint = {
-      user: user.carbonFootprint,
-      team: team.carbonFootprint,
-    };
-    return res.json(footprint);
+    return res.json(team.carbonFootprint);
   } catch (error) {
     console.error('Failed to get carbon footprint: ', error);
     return res.status(400).json({ error: error.message });

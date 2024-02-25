@@ -219,13 +219,17 @@ export async function getCarbonFootprint(req, res) {
       await updateUserCarbonFootprint(user);
       user = await User.findById(req.user._id);
     }
-    // let team = user.team ? await Team.findById(user.team) : null;
-    // if (team && team.carbonFootprint_isStale) {
-    //   console.log(`Updating carbon footprint for team ${team.name}...`);
-    //   await Team.updateTeamCarbonFootprint(team);
-    //   team = await Team.findById(user.team);
-    // }
-    return res.json(user.carbonFootprint);
+    let team = user.team ? await Team.findById(user.team) : null;
+    if (team && team.carbonFootprint_isStale) {
+      console.log(`Updating carbon footprint for team ${team.name}...`);
+      await Team.updateTeamCarbonFootprint(team);
+      team = await Team.findById(user.team);
+    }
+    const footprint = {
+      user: user.carbonFootprint,
+      team: team.carbonFootprint,
+    };
+    return res.json(footprint);
   } catch (error) {
     console.error('Failed to get carbon footprint: ', error);
     return res.status(400).json({ error: error.message });

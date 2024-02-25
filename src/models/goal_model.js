@@ -12,6 +12,8 @@ const goalSchema = new mongoose.Schema({
     completed: { type: String, enum: ['completed', 'failed', 'future', 'past'], required: true },
     date: { type: Date, default: Date.now },
   }],
+  carbonReduction: { type: Number, default: 0 },
+  totalCarbonReduction: { type: Number, default: 0 },
   streakData_isStale: { type: Boolean, default: true },
 });
 

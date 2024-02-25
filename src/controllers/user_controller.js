@@ -181,11 +181,11 @@ export async function updateUserCarbonFootprint(user) {
       .reduce((total, trip) => { return total + trip.actualCarbonFootprint; }, 0);
 
     if (user.footprintData.food.length > 0) {
-      console.log('user.footprintData.food last: ', user.footprintData.food[-1]);
+      console.log('user.footprintData.food last: ', user.footprintData.food[user.footprintData.food.length - 1]);
       console.log('weekStartDate: ', weekStartDate);
-      console.log('food emission weekly: ', getFoodEmissionWeekly(user.footprintData.food[-1]));
+      console.log('food emission weekly: ', getFoodEmissionWeekly(user.footprintData.food[user.footprintData.food.length - 1]));
       newFootprint.allTime.food = getFoodEmissionAllTime(user.footprintData.food) ?? 0;
-      newFootprint.weekly.food = user.footprintData.food[-1].date >= weekStartDate ? getFoodEmissionWeekly(user.footprintData.food[-1]) ?? 0 : 0;
+      newFootprint.weekly.food = user.footprintData.food[user.footprintData.food.length - 1].date >= weekStartDate ? getFoodEmissionWeekly(user.footprintData.food[user.footprintData.food.length - 1]) ?? 0 : 0;
     } else {
       newFootprint.allTime.food = 0;
       newFootprint.weekly.food = 0;

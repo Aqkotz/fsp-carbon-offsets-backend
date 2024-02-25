@@ -445,8 +445,7 @@ export function getFoodEmissionWeekly(consumption) {
   let none = false;
   const data = foodData;
 
-  console.log('no consumption');
-  if (!consumption) return null;
+  if (!consumption) return 0;
 
   Object.entries(foodSimpleData).forEach(([food, _]) => {
     const amount = consumption[food];
@@ -461,7 +460,9 @@ export function getFoodEmissionWeekly(consumption) {
         * data.wastes[wasteType].ratio;
   });
 
-  if (none) return null;
+  console.log('weekly', emission, waste);
+
+  if (none) return 0;
 
   return emission + waste;
 }

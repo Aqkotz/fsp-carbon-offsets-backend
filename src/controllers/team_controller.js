@@ -95,6 +95,8 @@ export async function updateTeamCarbonFootprint(team) {
       allTime: {},
     };
 
+    console.log('team: ', team);
+
     team.members.foreach((member) => {
       console.log('member: ', member);
     });

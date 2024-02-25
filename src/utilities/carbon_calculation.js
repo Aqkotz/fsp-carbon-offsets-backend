@@ -463,7 +463,7 @@ export function getFoodEmissionWeekly(consumption) {
 
   if (none) return null;
 
-  return { emission, waste };
+  return emission + waste;
 }
 
 export function getFoodEmissionAllTime(food) {

@@ -81,6 +81,7 @@ export const getJoinCode = async (req, res) => {
 
 export async function updateTeamCarbonFootprint(team) {
   try {
+    await team.populate('members');
     // Update carbon footprints for all trips
     await Promise.all(team.members.map(async (user) => {
       if (user.carbonFootprint_isStale) {

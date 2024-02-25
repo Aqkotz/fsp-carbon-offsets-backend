@@ -166,7 +166,7 @@ export async function updateUserCarbonFootprint(user) {
     const team = await Team.findById(user.team);
     const programDays = !team ? 7 : Math.floor((Date.now() - team.startDate) / (1000 * 60 * 60 * 24));
     const week = !team ? 1 : Math.floor((Date.now() - team.startDate) / (1000 * 60 * 60 * 24 * 7)) + 1;
-    const weekStartDate = !team ? Date.now() - 7 * 24 * 60 * 60 * 1000 : team.startDate + (week - 1) * 7 * 24 * 60 * 60 * 1000;
+    const weekStartDate = !team ? Date.now() - 7 * 24 * 60 * 60 * 1000 : team.startDate + (week - 2) * 7 * 24 * 60 * 60 * 1000;
 
     const newFootprint = {
       weekly: {},

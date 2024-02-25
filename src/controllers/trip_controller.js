@@ -2,6 +2,8 @@ import axios from 'axios';
 import Trip from '../models/trip_model';
 import User from '../models/user_model';
 import Team from '../models/team_model';
+import { updateTeamCarbonFootprint } from './team_controller';
+import { updateUserCarbonFootprint } from './user_controller';
 
 // Update a trip
 export const updateTrip = async (req, res) => {
@@ -182,3 +184,28 @@ export const getTripEstimate = async (req, res) => {
     return res.status(400).json({ error: error.message });
   }
 };
+
+export async function getCarbonFootprint(req, res) {
+  try {
+    let user = await User.findById(req.user._id).populate('trips');
+    if (user.carbonFootprint_isStale) {
+      console.log(`Updating carbon footprint for user ${user.name}...`);
+      await updateUserCarbonFootprint(user);
+      user = await User.findById(req.user._id);
+    }
+    let team = user.team ? await Team.findById(user.team) : null;
+    if (team && team.carbonFootprint_isStale) {
+      console.log(`Updating carbon footprint for team ${team.name}...`);
+      await updateTeamCarbonFootprint(team);
+      team = await Team.findById(user.team);
+    }
+    const footprint = {
+      user: user.carbonFootprint,
+      team: team.carbonFootprint,
+    };
+    return res.json(footprint);
+  } catch (error) {
+    console.error('Failed to get carbon footprint: ', error);
+    return res.status(400).json({ error: error.message });
+  }
+}

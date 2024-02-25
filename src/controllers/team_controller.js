@@ -142,23 +142,6 @@ export async function getCarbonFootprint(req, res) {
   }
 }
 
-// export async function updateWeeks() {
-//   try {
-//     const teams = await Team.find({});
-//     teams.forEach((team) => {
-//       team.members.forEach((member) => {
-//         member.carbonFootprint_isStale = true;
-//         member.save();
-//       });
-//       team.week += 1;
-//       team.carbonFootprint_isStale = true;
-//       team.save();
-//     });
-//   } catch (error) {
-//     console.log(error);
-//   }
-// }
-
 export function weekForTeam(team) {
   return Math.floor((Date.now() - team.startDate) / (1000 * 60 * 60 * 24 * 7)) + 1;
 }

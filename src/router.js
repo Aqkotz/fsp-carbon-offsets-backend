@@ -19,7 +19,7 @@ router.post('/signin', requireSignin, Users.signin);
 
 router.post('/updatestreaks', Users.updateStreaks);
 
-router.get('/carbonfootprint', requireAuth, Users.getCarbonFootprint);
+router.get('/carbonfootprint', requireAuth, Trips.getCarbonFootprint);
 
 router.post('/trips', requireAuth, Trips.createTrip);
 

@@ -207,32 +207,7 @@ export async function updateUserCarbonFootprint(user) {
     await user.save();
   } catch (error) {
     console.error('Error updating carbon footprints: ', error);
-    throw error; // Rethrow the error to be handled by the caller
-  }
-}
-
-export async function getCarbonFootprint(req, res) {
-  try {
-    let user = await User.findById(req.user._id).populate('trips');
-    if (user.carbonFootprint_isStale) {
-      console.log(`Updating carbon footprint for user ${user.name}...`);
-      await updateUserCarbonFootprint(user);
-      user = await User.findById(req.user._id);
-    }
-    let team = user.team ? await Team.findById(user.team) : null;
-    if (team && team.carbonFootprint_isStale) {
-      console.log(`Updating carbon footprint for team ${team.name}...`);
-      await Team.updateTeamCarbonFootprint(team);
-      team = await Team.findById(user.team);
-    }
-    const footprint = {
-      user: user.carbonFootprint,
-      team: team.carbonFootprint,
-    };
-    return res.json(footprint);
-  } catch (error) {
-    console.error('Failed to get carbon footprint: ', error);
-    return res.status(400).json({ error: error.message });
+    throw error;
   }
 }
 

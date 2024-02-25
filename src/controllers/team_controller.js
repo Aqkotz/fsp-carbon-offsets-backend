@@ -95,6 +95,10 @@ export async function updateTeamCarbonFootprint(team) {
       allTime: {},
     };
 
+    team.members.foreach((member) => {
+      console.log('member: ', member);
+    });
+
     newCarbonFootprint.weekly.travel = team.members
       .reduce((total, user) => { return total + user.carbonFootprint.weekly.travel; }, 0);
     newCarbonFootprint.weekly.food = team.members

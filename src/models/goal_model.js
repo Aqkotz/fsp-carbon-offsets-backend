@@ -14,7 +14,7 @@ const goalSchema = new mongoose.Schema({
   }],
   carbonReduction: { type: Number, default: 0 },
   totalCarbonReduction: { type: Number, default: 0 },
-  streakData_isStale: { type: Boolean, default: true },
+  data_isStale: { type: Boolean, default: true },
 });
 
 const Goal = mongoose.model('Goal', goalSchema);

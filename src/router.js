@@ -3,6 +3,7 @@ import * as Users from './controllers/user_controller';
 import * as Trips from './controllers/trip_controller';
 import * as Post from './controllers/post_controller';
 import * as Team from './controllers/team_controller';
+import * as Goal from './controllers/goal_controller';
 import { requireAuth, requireSignin } from './services/passport';
 
 const router = Router();
@@ -67,12 +68,12 @@ router.post('/house', requireAuth, Users.setHouseData);
 
 router.get('/house', requireAuth, Users.getHouse);
 
-// router.get('/themes', Goal.getThemes);
+router.get('/themes', Goal.getThemes);
 
-// router.get('/goals/:theme', Goal.getGoals);
+router.get('/goals/:theme', Goal.getGoalsByTheme);
 
-// router.post('/goals', requireAuth, Goal.setGoal);
+router.post('/goals', requireAuth, Goal.setGoal);
 
-// router.get('/goals', requireAuth, Goal.getUserGoals);
+router.get('/goals', requireAuth, Goal.getGoals);
 
 export default router;

@@ -78,4 +78,6 @@ router.get('/goals', requireAuth, Goal.getGoals);
 
 router.delete('/goals/:id', requireAuth, Goal.deleteGoal);
 
+router.post('/goals/status/:id', requireAuth, Goal.setGoalStatusForDay);
+
 export default router;

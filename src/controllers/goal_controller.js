@@ -184,7 +184,7 @@ export async function setGoalStatusForDay(req, res) {
     const { status } = req.body;
     const goal = await Goal.findById(id);
     if (goal.streak.some((streak) => { return streak.date >= (new Date()).setHours(0, 0, 0, 0); })) {
-      return res.status(400).json({ error: 'Goal status already set today' });
+      return res.json(goal);
     }
     goal.streak.push({ completed: status, date: new Date() });
     goal.data_isStale = true;

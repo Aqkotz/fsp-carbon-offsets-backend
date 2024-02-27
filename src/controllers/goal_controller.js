@@ -184,7 +184,7 @@ export async function setGoalStatusForDay(req, res) {
     const { status } = req.body;
     const goal = await Goal.findById(id);
     if (goal.streak.some((streak) => { return streak.date >= (new Date()).setHours(0, 0, 0, 0); })) {
-      return res.json(goal);
+      return res.json('goal already set for today');
     }
     goal.streak.push({ completed: status, date: new Date() });
     goal.data_isStale = true;
@@ -198,7 +198,7 @@ export async function setGoalStatusForDay(req, res) {
 function currentWeekForGoal(goal) {
   const currentWeek = [];
   const today = new Date();
-  today.setHours(0, 0, 0, 0); // Normalize today's date for comparison
+  today.setHours(0, 0, 0, 0);
   const startOfWeek = new Date(today);
   startOfWeek.setDate(today.getDate() - today.getDay());
 

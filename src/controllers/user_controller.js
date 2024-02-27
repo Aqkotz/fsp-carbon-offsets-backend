@@ -4,7 +4,6 @@ import jwt from 'jwt-simple';
 import axios from 'axios';
 import xml2js from 'xml2js';
 import User from '../models/user_model';
-import UserGoal from '../models/user_goal_model';
 import Trip from '../models/trip_model';
 import Team from '../models/team_model';
 import {
@@ -135,23 +134,6 @@ function tokenForUser(user) {
   const timestamp = new Date().getTime();
   return jwt.encode({ sub: user.id, iat: timestamp }, process.env.AUTH_SECRET);
 }
-
-export const updateStreaks = async (req, res) => {
-  try {
-    console.log('Updating streaks...');
-    const goals = await UserGoal.find({});
-    goals.forEach((goal) => {
-      console.log('goal: ', goal);
-      goal.streak.push(goal.completedToday);
-      goal.completedToday = false;
-      goal.failed = false;
-      goal.save();
-    });
-    return res.json(goals);
-  } catch (error) {
-    return res.status(400).json({ error: error.message });
-  }
-};
 
 export async function updateUserCarbonFootprint(user) {
   try {

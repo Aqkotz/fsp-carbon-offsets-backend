@@ -186,12 +186,13 @@ export async function setAllTeamsStale() {
 export async function updateLeaderboardForTeam(team) {
   try {
     await team.populate('members');
+    console.log(team.members);
     const leaderboardMembers = team.members.sort((a, b) => {
       return a.carbonFootprint.reduction.total - b.carbonFootprint.reduction.total;
     });
     const leaderboard = leaderboardMembers.map((member) => {
       return {
-        userId: member._id,
+        userId: member.id,
         carbonReduction: member.carbonFootprint.reduction.total,
       };
     });

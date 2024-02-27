@@ -5,112 +5,112 @@ import User from '../models/user_model';
 const allGoals = [
   {
     description: 'Eat a meatless meal',
-    carbonOffset: 2.5,
+    carbonReduction: 2.5,
     theme: 'food',
   },
   {
     description: 'Eat a meal with locally sourced (less than 100 miles)',
-    carbonOffset: 0.5,
+    carbonReduction: 0.5,
     theme: 'food',
   },
   {
     description: 'Eat a vegan meal',
-    carbonOffset: 3,
+    carbonReduction: 3,
     theme: 'food',
   },
   {
     description: 'Take public transportation rather than driving',
-    carbonOffset: 1,
+    carbonReduction: 1,
     theme: 'travel',
   },
   {
     description: 'Take a train instead of plane',
-    carbonOffset: 150,
+    carbonReduction: 150,
     theme: 'travel',
   },
   {
     description: 'Bring a resuable coffee cup',
-    carbonOffset: 0.11,
+    carbonReduction: 0.11,
     theme: 'food',
   },
   {
     description: 'Use and refil a reusable water bottle',
-    carbonOffset: 0.08,
+    carbonReduction: 0.08,
     theme: 'food',
   },
   {
     description: 'Take a shower under X minutes',
-    carbonOffset: 0.02,
+    carbonReduction: 0.02,
     theme: 'house',
   },
   {
     description: 'Set your room tempeature to X',
-    carbonOffset: 2.79,
+    carbonReduction: 2.79,
     theme: 'house',
   },
   {
     description: 'Use Pfand for a single use container',
-    carbonOffset: 0.05,
+    carbonReduction: 0.05,
     theme: 'food',
   },
   {
     description: 'Bring a resusable bag to the grocery store',
-    carbonOffset: 0.015,
+    carbonReduction: 0.015,
     theme: 'food',
   },
   {
     description: 'Donate one item of clothing',
-    carbonOffset: 3,
+    carbonReduction: 3,
     theme: 'house',
   },
   {
     description: 'Air dry your clothes',
-    carbonOffset: 2.3,
+    carbonReduction: 2.3,
     theme: 'house',
   },
   {
     description: 'Walk to class',
-    carbonOffset: 0.15,
+    carbonReduction: 0.15,
     theme: 'travel',
   },
   {
     description: 'Reuse your pong cups',
-    carbonOffset: 1.21,
+    carbonReduction: 1.21,
     theme: 'food',
   },
   {
     description: 'Bring your lunch in reusable container rather than single use',
-    carbonOffset: 0.04,
+    carbonReduction: 0.04,
     theme: 'food',
   },
   {
     description: 'Turn off lights when not in use',
-    carbonOffset: 0.06,
+    carbonReduction: 0.06,
     theme: 'house',
   },
   {
     description: 'Use a lamp instead of overhead lighting',
-    carbonOffset: 0.12,
+    carbonReduction: 0.12,
     theme: 'house',
   },
   {
     description: 'Use electronic copies rather than printed copies',
-    carbonOffset: 0.0225,
+    carbonReduction: 0.0225,
     theme: 'house',
   },
   {
     description: 'Take the stairs instead of an elevator',
-    carbonOffset: 0.008,
+    carbonReduction: 0.008,
     theme: 'travel',
   },
   {
     description: 'By secondhand goods instead of new',
-    carbonOffset: 3,
+    carbonReduction: 3,
     theme: 'house',
   },
   {
     description: 'Turn off unused electronics',
-    carbonOffset: 0.048,
+    carbonReduction: 0.048,
     theme: 'house',
   },
 ];
@@ -251,6 +251,24 @@ export async function updateGoalData(goal) {
   goal.totalCarbonReduction = totalCarbonReduction;
   goal.data_isStale = false;
 
+  const { team } = await User.findOne({ goals: goal._id }).populate('team');
+  team.leaderboard_isStale = true;
+  team.carbonFootprint_isStale = true;
+  await team.save();
+
   await goal.save();
   return goal;
+}
+
+export async function setAllGoalsStale() {
+  try {
+    const goals = await Goal.find({});
+    await Promise.all(goals.map(async (goal) => {
+      goal.data_isStale = true;
+      return goal.save();
+    }));
+  } catch (error) {
+    console.error('Failed to set all teams stale: ', error);
+    throw error;
+  }
 }

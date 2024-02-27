@@ -22,7 +22,8 @@ const teamSchema = new mongoose.Schema({
   },
   carbonFootprint_isStale: { type: Boolean, default: true },
   startDate: { type: Date, default: Date.now, required: true },
-  // currentWeek: { type: Number, default: 0 },
+  leaderboard: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+  leaderboard_isStale: { type: Boolean, default: true },
 }, {
   toObject: { virtuals: true },
   toJSON: { virtuals: true },

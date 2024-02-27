@@ -287,3 +287,16 @@ export async function getHouse(req, res) {
     return res.status(400).json({ error: error.message });
   }
 }
+
+export async function setAllUsersStale() {
+  try {
+    const users = await User.find({});
+    await Promise.all(users.map(async (user) => {
+      user.carbonFootprint_isStale = true;
+      await user.save();
+    }));
+  } catch (error) {
+    console.error('Failed to set all users stale: ', error);
+    throw error;
+  }
+}

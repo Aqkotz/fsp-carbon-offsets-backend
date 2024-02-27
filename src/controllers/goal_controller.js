@@ -181,12 +181,12 @@ export async function deleteGoal(req, res) {
 export async function setGoalStatusForDay(req, res) {
   try {
     const { id } = req.params;
-    const { completed } = req.body;
+    const { status } = req.body;
     const goal = await Goal.findById(id);
     if (goal.streak.some((streak) => { return streak.date >= (new Date()).setHours(0, 0, 0, 0); })) {
       return res.status(400).json({ error: 'Goal status already set today' });
     }
-    goal.streak.push({ completed, date: new Date() });
+    goal.streak.push({ completed: status, date: new Date() });
     goal.data_isStale = true;
     await goal.save();
     return res.json(goal);

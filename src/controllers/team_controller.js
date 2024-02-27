@@ -191,10 +191,12 @@ export async function updateLeaderboardForTeam(team) {
       return a.carbonFootprint.reduction.total - b.carbonFootprint.reduction.total;
     });
     const leaderboard = leaderboardMembers.map((member) => {
-      return {
+      const item = {
         userId: member.id,
         carbonReduction: member.carbonFootprint.reduction.total,
       };
+      console.log('leaderboarditem: ', item);
+      return item;
     });
     team.leaderboard = leaderboard;
     team.leaderboard_isStale = false;

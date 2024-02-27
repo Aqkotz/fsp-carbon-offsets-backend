@@ -18,6 +18,8 @@ export const getTeamAndUpdate = async (userId) => {
     await updateLeaderboardForTeam(team);
     team = await Team.findById(user.team);
   }
+  await team.populate('members');
+  await team.populate('leaderboard');
   return team;
 };
 

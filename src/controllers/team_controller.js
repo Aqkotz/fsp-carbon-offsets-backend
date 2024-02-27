@@ -19,7 +19,6 @@ export const getTeamAndUpdate = async (userId) => {
     team = await Team.findById(user.team);
   }
   await team.populate('members');
-  await team.populate('leaderboard');
   return team;
 };
 
@@ -187,8 +186,14 @@ export async function setAllTeamsStale() {
 export async function updateLeaderboardForTeam(team) {
   try {
     await team.populate('members');
-    const leaderboard = team.members.sort((a, b) => {
+    const leaderboardMembers = team.members.sort((a, b) => {
       return a.carbonFootprint.reduction.total - b.carbonFootprint.reduction.total;
+    });
+    const leaderboard = leaderboardMembers.map((member) => {
+      return {
+        userId: member.id,
+        carbonReduction: member.carbonFootprint.reduction.total,
+      };
     });
     team.leaderboard = leaderboard;
     team.leaderboard_isStale = false;

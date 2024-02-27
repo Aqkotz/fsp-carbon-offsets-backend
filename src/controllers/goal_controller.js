@@ -200,12 +200,7 @@ function currentWeekForGoal(goal) {
   const today = new Date();
   today.setHours(0, 0, 0, 0); // Normalize today's date for comparison
   const startOfWeek = new Date(today);
-  startOfWeek.setDate(today.getDate() - today.getDay()); // Get Sunday as the start of the week
-
-  // Determine the bounds of the streak for comparison
-  const streakDates = goal.streak.map((streak) => { return new Date(streak.date); });
-  const streakStart = streakDates.length ? new Date(Math.min.apply(null, streakDates)) : null;
-  const streakEnd = streakDates.length ? new Date(Math.max.apply(null, streakDates)) : null;
+  startOfWeek.setDate(today.getDate() - today.getDay());
 
   for (let i = 0; i < 7; i += 1) {
     const date = new Date(startOfWeek);
@@ -221,12 +216,10 @@ function currentWeekForGoal(goal) {
     if (streakEntry) {
       completed = streakEntry.completed;
     } else {
-      if (streakStart && date < streakStart) {
+      if (date < today) {
         completed = 'past';
-      } else if (streakEnd && date > streakEnd) {
+      } else if (date > today) {
         completed = 'future';
-      } else {
-        completed = 'failed';
       }
     }
 

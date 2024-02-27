@@ -233,9 +233,11 @@ function currentWeekForGoal(goal) {
 }
 
 export async function updateGoalData(goal) {
-  goal.totalCarbonReduction = goal.streak.reduce((total, streak) => {
+  const totalCarbonReduction = goal.streak.reduce((total, streak) => {
     return total + (streak.completed === 'completed' ? goal.carbonOffset : 0) ?? 0;
   }, 0) ?? 0;
+
+  console.log(totalCarbonReduction);
 
   goal.currentWeek = currentWeekForGoal(goal);
   goal.streakLength = 0;
@@ -246,6 +248,7 @@ export async function updateGoalData(goal) {
       break;
     }
   }
+  goal.totalCarbonReduction = totalCarbonReduction;
   goal.data_isStale = false;
 
   await goal.save();

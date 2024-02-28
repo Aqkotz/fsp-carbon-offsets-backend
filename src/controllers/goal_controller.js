@@ -217,7 +217,7 @@ function currentWeekForGoal(goal) {
     });
 
     if (streakEntry) {
-      completed = streakEntry.completed;
+      completed = streakEntry.completed === 'completed' ? 'completed' : 'failed';
     } else {
       if (date < today) {
         completed = 'past';
@@ -260,7 +260,6 @@ export async function updateGoalData(goal) {
     team.leaderboard_isStale = true;
     team.carbonFootprint_isStale = true;
     await team.save();
-
     await goal.save();
     return goal;
   } catch (error) {

@@ -192,7 +192,7 @@ export async function updateLeaderboardForTeam(team) {
     });
     const leaderboard = leaderboardMembers.map((member) => {
       return {
-        name: member.name,
+        userId: member._id,
         reduction: member.carbonFootprint.reduction.total,
       };
     });

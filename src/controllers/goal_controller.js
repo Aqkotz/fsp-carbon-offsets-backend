@@ -236,31 +236,37 @@ function currentWeekForGoal(goal) {
 }
 
 export async function updateGoalData(goal) {
-  const totalCarbonReduction = goal.streak.reduce((total, streak) => {
-    return total + (streak.completed === 'completed' ? goal.carbonReduction : 0) ?? 0;
-  }, 0) ?? 0;
+  try {
+    console.log('Updating goal data', goal.description);
+    const totalCarbonReduction = goal.streak.reduce((total, streak) => {
+      return total + (streak.completed === 'completed' ? goal.carbonReduction : 0) ?? 0;
+    }, 0) ?? 0;
 
-  console.log(totalCarbonReduction);
+    console.log(totalCarbonReduction);
 
-  goal.currentWeek = currentWeekForGoal(goal);
-  goal.streakLength = 0;
-  for (let i = goal.streak.length - 1; i >= 0; i -= 1) {
-    if (goal.streak[i].completed === 'completed') {
-      goal.streakLength += 1;
-    } else {
-      break;
+    goal.currentWeek = currentWeekForGoal(goal);
+    goal.streakLength = 0;
+    for (let i = goal.streak.length - 1; i >= 0; i -= 1) {
+      if (goal.streak[i].completed === 'completed') {
+        goal.streakLength += 1;
+      } else {
+        break;
+      }
     }
+    goal.totalCarbonReduction = totalCarbonReduction;
+    goal.data_isStale = false;
+
+    const { team } = await User.findOne({ goals: goal._id }).populate('team');
+    team.leaderboard_isStale = true;
+    team.carbonFootprint_isStale = true;
+    await team.save();
+
+    await goal.save();
+    return goal;
+  } catch (error) {
+    console.error('Error updating goal data: ', error);
+    throw error;
   }
-  goal.totalCarbonReduction = totalCarbonReduction;
-  goal.data_isStale = false;
-
-  const { team } = await User.findOne({ goals: goal._id }).populate('team');
-  team.leaderboard_isStale = true;
-  team.carbonFootprint_isStale = true;
-  await team.save();
-
-  await goal.save();
-  return goal;
 }
 
 export async function setAllGoalsStale() {

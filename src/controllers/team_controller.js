@@ -101,39 +101,29 @@ export async function updateTeamCarbonFootprint(team) {
       return Promise.resolve();
     }));
 
-    const newCarbonFootprint = {
-      weekly: {},
-      allTime: {},
-    };
-
     team.members.forEach((member) => {
       console.log('member: ', member);
     });
 
-    newCarbonFootprint.weekly.travel = team.members
-      .reduce((total, user) => { return total + user.carbonFootprint.weekly.travel; }, 0);
-    newCarbonFootprint.weekly.food = team.members
-      .reduce((total, user) => { return total + user.carbonFootprint.weekly.food; }, 0);
-    newCarbonFootprint.weekly.house = team.members
-      .reduce((total, user) => { return total + user.carbonFootprint.weekly.house; }, 0);
+    const categories = ['weekly', 'allTime', 'reduction'];
+    const types = ['travel', 'food', 'house'];
 
-    newCarbonFootprint.allTime.travel = team.members
-      .reduce((total, user) => { return total + user.carbonFootprint.allTime.travel; }, 0);
-    newCarbonFootprint.allTime.food = team.members
-      .reduce((total, user) => { return total + user.carbonFootprint.allTime.food; }, 0);
-    newCarbonFootprint.allTime.house = team.members
-      .reduce((total, user) => { return total + user.carbonFootprint.allTime.house; }, 0);
+    // Initialize newCarbonFootprint structure if not already done
+    const newCarbonFootprint = {
+      weekly: { total: 0 },
+      allTime: { total: 0 },
+      reduction: { total: 0 },
+    };
 
-    newCarbonFootprint.reduction.travel = team.members
-      .reduce((total, user) => { return total + user.carbonFootprint.reduction.travel; }, 0);
-    newCarbonFootprint.reduction.food = team.members
-      .reduce((total, user) => { return total + user.carbonFootprint.reduction.food; }, 0);
-    newCarbonFootprint.reduction.house = team.members
-      .reduce((total, user) => { return total + user.carbonFootprint.reduction.house; }, 0);
-
-    newCarbonFootprint.weekly.total = newCarbonFootprint.weekly.travel + newCarbonFootprint.weekly.food + newCarbonFootprint.weekly.house;
-    newCarbonFootprint.allTime.total = newCarbonFootprint.allTime.travel + newCarbonFootprint.allTime.food + newCarbonFootprint.allTime.house;
-    newCarbonFootprint.reduction.total = newCarbonFootprint.reduction.travel + newCarbonFootprint.reduction.food + newCarbonFootprint.reduction.house;
+    categories.forEach((category) => {
+      types.forEach((type) => {
+        newCarbonFootprint[category][type] = team.members.reduce((total, user) => {
+          return total + user.carbonFootprint[category][type];
+        }, 0);
+        // Accumulate totals for each category
+        newCarbonFootprint[category].total += newCarbonFootprint[category][type];
+      });
+    });
     team.carbonFootprint = newCarbonFootprint;
     team.carbonFootprint_isStale = false;
 

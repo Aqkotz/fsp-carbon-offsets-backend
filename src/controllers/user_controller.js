@@ -140,7 +140,6 @@ function tokenForUser(user) {
 
 export async function updateUserCarbonFootprint(user) {
   try {
-    // Update carbon footprints for all trips
     await Promise.all(user.trips.map(async (trip) => {
       if (trip.isStale) {
         console.log('Updating carbon footprint for trip: ', trip._id);

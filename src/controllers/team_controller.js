@@ -122,6 +122,7 @@ export async function updateTeamCarbonFootprint(team) {
         newCarbonFootprint[category].total += newCarbonFootprint[category][type];
       });
     });
+
     team.carbonFootprint = newCarbonFootprint;
     team.carbonFootprint_isStale = false;
 
@@ -154,6 +155,7 @@ export async function updateLeaderboardForTeam(team) {
     });
     const leaderboard = leaderboardMembers.map((member) => {
       return {
+        name: member.name,
         userId: member._id,
         carbonReduction: member.carbonFootprint.reduction.total,
       };

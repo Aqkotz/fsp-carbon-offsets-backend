@@ -151,7 +151,7 @@ export async function updateLeaderboardForTeam(team) {
   try {
     await team.populate('members');
     const leaderboardMembers = team.members.sort((a, b) => {
-      return a.carbonFootprint.reduction.total - b.carbonFootprint.reduction.total;
+      return b.carbonFootprint.reduction.total - a.carbonFootprint.reduction.total;
     });
     const leaderboard = leaderboardMembers.map((member) => {
       return {

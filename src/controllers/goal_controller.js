@@ -209,7 +209,7 @@ function currentWeekForGoal(goal) {
     const date = new Date(startOfWeek);
     date.setDate(startOfWeek.getDate() + i);
 
-    let completed = 'failed';
+    let completed = 'past';
     const streakEntry = goal.streak.find((streak) => {
       const streakDate = new Date(streak.date);
       streakDate.setHours(0, 0, 0, 0);

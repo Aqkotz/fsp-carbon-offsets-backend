@@ -172,6 +172,9 @@ export async function deleteGoal(req, res) {
   try {
     const { id } = req.params;
     await Goal.deleteOne({ _id: id });
+    const user = await User.findOne({ goals: id });
+    user.goals.pull(id);
+    await user.save();
     return res.json({ id });
   } catch (error) {
     return res.status(400).json({ error: error.message });

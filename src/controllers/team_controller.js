@@ -108,7 +108,6 @@ export async function updateTeamCarbonFootprint(team) {
     const categories = ['weekly', 'allTime', 'reduction'];
     const types = ['travel', 'food', 'house'];
 
-    // Initialize newCarbonFootprint structure if not already done
     const newCarbonFootprint = {
       weekly: { total: 0 },
       allTime: { total: 0 },
@@ -120,7 +119,6 @@ export async function updateTeamCarbonFootprint(team) {
         newCarbonFootprint[category][type] = team.members.reduce((total, user) => {
           return total + user.carbonFootprint[category][type];
         }, 0);
-        // Accumulate totals for each category
         newCarbonFootprint[category].total += newCarbonFootprint[category][type];
       });
     });

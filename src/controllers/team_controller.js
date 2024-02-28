@@ -150,16 +150,14 @@ export async function setAllTeamsStale() {
 export async function updateLeaderboardForTeam(team) {
   try {
     await team.populate('members');
-    const leaderboardMembers = team.members.sort((a, b) => {
-      return b.carbonFootprint.reduction.total - a.carbonFootprint.reduction.total;
-    });
-    const leaderboard = leaderboardMembers.map((member) => {
+    const leaderboard = team.members.map((member) => {
       return {
         name: member.name,
         userId: member._id,
         carbonReduction: member.carbonFootprint.reduction.total,
       };
     });
+    leaderboard.sort((a, b) => { return b.carbonReduction - a.carbonReduction; });
     team.leaderboard = leaderboard;
     team.leaderboard_isStale = false;
     await team.save();

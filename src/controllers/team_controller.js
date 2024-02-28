@@ -10,7 +10,7 @@ export const getTeamAndUpdate = async (userId) => {
   }
   if (team.carbonFootprint_isStale) {
     console.log(`Updating carbon footprint for team ${team.name}...`);
-    await updateTeamCarbonFootprint(await team.populate('members'));
+    await updateTeamCarbonFootprint(team);
     team = await Team.findById(user.team);
   }
   if (team.leaderboard_isStale) {
@@ -18,7 +18,6 @@ export const getTeamAndUpdate = async (userId) => {
     await updateLeaderboardForTeam(team);
     team = await Team.findById(user.team);
   }
-  await team.populate('members');
   return team;
 };
 
@@ -94,7 +93,7 @@ export const getJoinCode = async (req, res) => {
 export async function updateTeamCarbonFootprint(team) {
   try {
     await team.populate('members');
-    // Update carbon footprints for all trips
+    console.log('Updating carbon footprints for team: ', team.name);
     await Promise.all(team.members.map(async (user) => {
       if (user.carbonFootprint_isStale) {
         console.log(`Updating carbon footprint for user ${user.name}...`);
@@ -107,8 +106,6 @@ export async function updateTeamCarbonFootprint(team) {
       weekly: {},
       allTime: {},
     };
-
-    console.log('team: ', team);
 
     team.members.forEach((member) => {
       console.log('member: ', member);
@@ -195,7 +192,6 @@ export async function updateLeaderboardForTeam(team) {
         carbonReduction: member.carbonFootprint.reduction.total,
       };
     });
-    console.log('leaderboard', leaderboard);
     team.leaderboard = leaderboard;
     team.leaderboard_isStale = false;
     await team.save();

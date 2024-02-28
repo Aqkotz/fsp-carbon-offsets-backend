@@ -521,7 +521,7 @@ export function getHouseEmissionWeekly(house) {
   // ) climateCoeff = data.climateCoeffs[region.FACTOR];
 
   // Compute
-  return (house.surface * emissionFactor * combustibleFactor * climateCoeff) / 52;
+  return (house.surface * emissionFactor * combustibleFactor * climateCoeff) / 52 / house.residents;
 }
 
 export function getHouseEmissionAllTime(house, days) {

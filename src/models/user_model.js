@@ -35,6 +35,7 @@ const UserSchema = new Schema({
       built: { type: String, default: '' },
       type: { type: String, default: '' },
       heater: { type: String, default: '' },
+      residents: { type: Number, default: 0 },
     },
     food: { type: [Schema.Types.Mixed], default: [] },
   },

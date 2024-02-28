@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const postSchema = new mongoose.Schema({
   creator: { type: Object, required: true, ref: 'User' },
@@ -8,6 +8,6 @@ const postSchema = new mongoose.Schema({
   title: { type: String, required: true },
 });
 
-const Post = mongoose.model('Goal', postSchema);
+const Post = mongoose.model('Post', postSchema);
 
-module.exports = Post;
+export default Post;

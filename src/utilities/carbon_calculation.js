@@ -35,7 +35,7 @@ const foodData = {
         cream: 3.5,
         goat: 3.6,
         hard: 5.6,
-        soft: 4.3,
+        softDrinks: 4.3,
       },
       wasteEmissionFactor: 'fat_butter',
     },
@@ -83,7 +83,7 @@ const foodData = {
       },
       wasteEmissionFactor: 'paper',
     },
-    meatRed: {
+    redMeat: {
       averageWeight: 150,
       averageWeightDay: {
         delicatessen: 40.9,
@@ -100,7 +100,7 @@ const foodData = {
       },
       wasteEmissionFactor: 'plastic_film',
     },
-    meatWhite: {
+    whiteMeat: {
       averageWeight: 150,
       averageWeightDay: {
         meat: 52.9,
@@ -130,7 +130,7 @@ const foodData = {
       },
       wasteEmissionFactor: 'plastic_film',
     },
-    soft: {
+    softDrinks: {
       averageWeight: 150,
       averageWeightDay: {
         juice: 127,
@@ -240,12 +240,12 @@ const foodSimpleData = {
     wasteEmissionFactor: 'plastic_film',
     averageWeight: 200,
   },
-  meatRed: {
+  redMeat: {
     emission: 19.3,
     wasteEmissionFactor: 'plastic_film',
     averageWeight: 150,
   },
-  meatWhite: {
+  whiteMeat: {
     emission: 6.6,
     wasteEmissionFactor: 'plastic_film',
     averageWeight: 150,
@@ -255,7 +255,7 @@ const foodSimpleData = {
     wasteEmissionFactor: 'plastic_film',
     averageWeight: 150,
   },
-  soft: {
+  softDrinks: {
     emission: 0.93,
     wasteEmissionFactor: 'plastic_bottle',
     averageWeight: 150,
@@ -439,37 +439,36 @@ const houseData = {
   },
 };
 
-export function getFoodEmissionSimple(consumption) {
+export function getFoodEmissionWeekly(consumption) {
   let emission = 0;
   let waste = 0;
   let none = false;
   const data = foodData;
 
-  console.log('no consumption');
-  if (!consumption) return null;
+  if (!consumption) return 0;
 
   Object.entries(foodSimpleData).forEach(([food, _]) => {
     const amount = consumption[food];
     if (amount < WEEK_RANGE.min || amount > WEEK_RANGE.max) { none = true; }
     if (!foodSimpleData[food]) throw new Error(`Food ${food} not found in foodSimpleData`);
-    const yearlyWeight = (amount * foodSimpleData[food].averageWeight * 52) / 1000;
-    emission += yearlyWeight * foodSimpleData[food].emission;
-    const wasteType = foodSimpleData[food].wasteEmissionFactor;
-    waste
-        += yearlyWeight
-        * data.wastes[wasteType].packaging
-        * data.wastes[wasteType].ratio;
+    const yearlyWeight = (amount * foodSimpleData[food].averageWeight) / 1000;
+    if (yearlyWeight) {
+      emission += yearlyWeight * foodSimpleData[food].emission;
+      const wasteType = foodSimpleData[food].wasteEmissionFactor;
+      waste
+          += yearlyWeight
+          * data.wastes[wasteType].packaging
+          * data.wastes[wasteType].ratio;
+    }
   });
 
-  if (none) return null;
+  if (none) return 0;
 
-  return { emission, waste };
+  return emission + waste;
 }
 
-export function getFoodEmissionWeekly(consumption) {
-  const result = getFoodEmissionSimple(consumption);
-  if (!result) return null;
-  return (result.emission + result.waste) / 52;
+export function getFoodEmissionAllTime(food) {
+  return food.reduce((total, consumption) => { return total + getFoodEmissionWeekly(consumption) ?? 0; }, 0) ?? 0;
 }
 
 export function getFoodEmissionEstimate(consumption) {
@@ -498,7 +497,7 @@ export function getFoodEmissionEstimate(consumption) {
   return { emission, waste };
 }
 
-export function getHouseEmissionEstimated(house) {
+export function getHouseEmissionWeekly(house) {
   if (house.surface < 0) return null;
 
   const data = houseData;
@@ -522,5 +521,13 @@ export function getHouseEmissionEstimated(house) {
   // ) climateCoeff = data.climateCoeffs[region.FACTOR];
 
   // Compute
-  return (house.surface * emissionFactor * combustibleFactor * climateCoeff) / 52;
+  return (house.surface * emissionFactor * combustibleFactor * climateCoeff) / 52 / house.residents;
+}
+
+export function getHouseEmissionAllTime(house, days) {
+  const weekly = getHouseEmissionWeekly(house);
+
+  // const daysSinceStart = (new Date() - startDate) / (1000 * 60 * 60 * 24);
+
+  return weekly * (days / 7);
 }

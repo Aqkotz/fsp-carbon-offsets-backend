@@ -2,6 +2,25 @@ import Team from '../models/team_model';
 import User from '../models/user_model';
 import { updateUserCarbonFootprint } from './user_controller';
 
+export const getTeamAndUpdate = async (userId) => {
+  const user = await User.findById(userId);
+  let team = await Team.findById(user.team);
+  if (!team) {
+    return null;
+  }
+  if (team.carbonFootprint_isStale) {
+    console.log(`Updating carbon footprint for team ${team.name}...`);
+    await updateTeamCarbonFootprint(team);
+    team = await Team.findById(user.team);
+  }
+  if (team.leaderboard_isStale) {
+    console.log(`Updating leaderboard for team ${team.name}...`);
+    await updateLeaderboardForTeam(team);
+    team = await Team.findById(user.team);
+  }
+  return team;
+};
+
 export const createTeam = async (req, res) => {
   try {
     const team = new Team(req.body);
@@ -26,7 +45,8 @@ export const joinTeam = async (req, res) => {
     user.team = team._id;
     await team.save();
     await user.save();
-    return res.json(team);
+    const t = await getTeamAndUpdate(req.user._id);
+    return res.json(t);
   } catch (error) {
     return res.status(400).json({ error: error.message });
   }
@@ -35,7 +55,7 @@ export const joinTeam = async (req, res) => {
 export const leaveTeam = async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
-    const team = await Team.findById(user.team);
+    const team = await getTeamAndUpdate(user._id);
     team.members.pull(user.id);
     team.carbonFootprint_isStale = true;
     user.team = null;
@@ -49,16 +69,7 @@ export const leaveTeam = async (req, res) => {
 
 export const getTeam = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id);
-    let team = await Team.findById(user.team);
-    if (!team) {
-      return res.json(null);
-    }
-    if (team.carbonFootprint_isStale) {
-      console.log(`Updating carbon footprint for team ${team.name}...`);
-      await updateTeamCarbonFootprint(await team.populate('members'));
-      team = await Team.findById(user.team);
-    }
+    const team = await getTeamAndUpdate(req.user._id);
     return res.json(team);
   } catch (error) {
     return res.status(400).json({ error: error.message });
@@ -81,7 +92,7 @@ export const getJoinCode = async (req, res) => {
 
 export async function updateTeamCarbonFootprint(team) {
   try {
-    // Update carbon footprints for all trips
+    await team.populate('members');
     await Promise.all(team.members.map(async (user) => {
       if (user.carbonFootprint_isStale) {
         console.log(`Updating carbon footprint for user ${user.name}...`);
@@ -90,10 +101,30 @@ export async function updateTeamCarbonFootprint(team) {
       return Promise.resolve();
     }));
 
-    console.log(team.members);
+    team.members.forEach((member) => {
+      console.log('member: ', member);
+    });
 
-    team.carbonFootprint = team.members
-      .reduce((total, user) => { return total + user.carbonFootprint.total; }, 0);
+    const categories = ['weekly', 'allTime', 'reduction'];
+    const types = ['travel', 'food', 'house'];
+
+    const newCarbonFootprint = {
+      weekly: { total: 0 },
+      allTime: { total: 0 },
+      reduction: { total: 0 },
+    };
+
+    categories.forEach((category) => {
+      types.forEach((type) => {
+        newCarbonFootprint[category][type] = team.members.reduce((total, user) => {
+          return total + user.carbonFootprint[category][type];
+        }, 0);
+        newCarbonFootprint[category].total += newCarbonFootprint[category][type];
+      });
+    });
+
+    team.carbonFootprint = newCarbonFootprint;
+    team.carbonFootprint_isStale = false;
 
     await team.save();
   } catch (error) {
@@ -102,22 +133,36 @@ export async function updateTeamCarbonFootprint(team) {
   }
 }
 
-export async function getCarbonFootprint(req, res) {
+export async function setAllTeamsStale() {
   try {
-    const user = await User.findById(req.user._id);
-    const { teamId } = req.params;
-    let team = await Team.findById(teamId).populate('members');
-    if (!team.members.map((member) => { return member.id; }).includes(user.id)) {
-      return res.status(400).json({ error: 'User not in team' });
-    }
-    if (team.carbonFootprint_isStale || team.members.any((member) => { return member.carbonFootprint_isStale; })) {
-      console.log(`Updating carbon footprint for team ${team.name}...`);
-      await updateTeamCarbonFootprint(team);
-      team = await Team.findById(teamId);
-    }
-    return res.json(team.carbonFootprint);
+    const teams = await Team.find({});
+    await Promise.all(teams.map(async (team) => {
+      team.carbonFootprint_isStale = true;
+      team.leaderboard_isStale = true;
+      return team.save();
+    }));
   } catch (error) {
-    console.error('Failed to get carbon footprint: ', error);
-    return res.status(400).json({ error: error.message });
+    console.error('Failed to set all teams stale: ', error);
+    throw error;
+  }
+}
+
+export async function updateLeaderboardForTeam(team) {
+  try {
+    await team.populate('members');
+    const leaderboard = team.members.map((member) => {
+      return {
+        name: member.name,
+        userId: member._id,
+        carbonReduction: member.carbonFootprint.reduction.total,
+      };
+    });
+    leaderboard.sort((a, b) => { return b.carbonReduction - a.carbonReduction; });
+    team.leaderboard = leaderboard;
+    team.leaderboard_isStale = false;
+    await team.save();
+  } catch (error) {
+    console.error('Failed to update leaderboard: ', error);
+    throw error;
   }
 }

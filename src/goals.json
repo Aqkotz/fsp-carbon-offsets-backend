@@ -5,15 +5,15 @@
             "levels": [
                 {
                     "level": "Beginner",
-                    "carbonOffset": 100
+                    "carbonReduction": 100
                 },
                 {
                     "level": "Intermediate",
-                    "carbonOffset": 250
+                    "carbonReduction": 250
                 },
                 {
                     "level": "Advanced",
-                    "carbonOffset": 500
+                    "carbonReduction": 500
                 }
             ]
         },
@@ -22,15 +22,15 @@
             "levels": [
                 {
                     "level": "Beginner",
-                    "carbonOffset": 150
+                    "carbonReduction": 150
                 },
                 {
                     "level": "Intermediate",
-                    "carbonOffset": 300
+                    "carbonReduction": 300
                 },
                 {
                     "level": "Advanced",
-                    "carbonOffset": 600
+                    "carbonReduction": 600
                 }
             ]
         },
@@ -39,15 +39,15 @@
             "levels": [
                 {
                     "level": "Beginner",
-                    "carbonOffset": 50
+                    "carbonReduction": 50
                 },
                 {
                     "level": "Intermediate",
-                    "carbonOffset": 100
+                    "carbonReduction": 100
                 },
                 {
                     "level": "Advanced",
-                    "carbonOffset": 200
+                    "carbonReduction": 200
                 }
             ]
         }

@@ -180,6 +180,7 @@ export async function updateUserCarbonFootprint(user) {
     newFootprint.allTime.house = getHouseEmissionAllTime(user.footprintData.house, programDays) ?? 0;
     newFootprint.weekly.house = getHouseEmissionWeekly(user.footprintData.house) ?? 0;
 
+    await user.populate('goals');
     await Promise.all(user.goals.map(async (goal) => {
       if (goal.data_isStale) {
         console.log(`Updating goal data for goal ${goal._id}...`);

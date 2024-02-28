@@ -159,6 +159,7 @@ export async function updateUserCarbonFootprint(user) {
     const newFootprint = {
       weekly: {},
       allTime: {},
+      reduction: {},
     };
 
     newFootprint.allTime.travel = user.trips
@@ -198,9 +199,14 @@ export async function updateUserCarbonFootprint(user) {
       .filter((goal) => { return goal.theme === 'house'; })
       .reduce((total, goal) => { return total + goal.totalCarbonReduction; }, 0);
 
-    newFootprint.allTime.total = newFootprint.allTime.travel + newFootprint.allTime.food + newFootprint.allTime.house;
-    newFootprint.weekly.total = newFootprint.weekly.travel + newFootprint.weekly.food + newFootprint.weekly.house;
-    newFootprint.reduction.total = newFootprint.reduction.travel + newFootprint.reduction.food + newFootprint.reduction.house;
+    Object.keys(newFootprint).forEach((key) => {
+      newFootprint[key].total = Object.keys(newFootprint[key]).reduce((total, subKey) => {
+        if (subKey !== 'total') {
+          return total + newFootprint[key][subKey];
+        }
+        return total;
+      }, 0);
+    });
 
     user.carbonFootprint = newFootprint;
     user.carbonFootprint_isStale = false;

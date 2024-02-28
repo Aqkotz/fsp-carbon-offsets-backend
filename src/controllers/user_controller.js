@@ -9,6 +9,7 @@ import Team from '../models/team_model';
 import {
   getFoodEmissionWeekly, getFoodEmissionAllTime, getHouseEmissionWeekly, getHouseEmissionAllTime,
 } from '../utilities/carbon_calculation';
+import { updateGoalData } from './goal_controller';
 
 export const getUsers = async (req, res) => {
   try {
@@ -167,11 +168,7 @@ export async function updateUserCarbonFootprint(user) {
 
     if (user.footprintData.food.length > 0) {
       const lastFood = user.footprintData.food[user.footprintData.food.length - 1];
-      console.log('user.footprintData.food last: ', lastFood);
-      console.log('weekStartDate: ', weekStartDate);
-      console.log('food emission weekly: ', getFoodEmissionWeekly(lastFood));
       newFootprint.allTime.food = getFoodEmissionAllTime(user.footprintData.food);
-      console.log(`lastFood.date: ${lastFood.date}, weekStartDate: ${weekStartDate}, lastFood.date >= weekStartDate: ${lastFood.date >= weekStartDate}`);
       newFootprint.weekly.food = lastFood.date >= weekStartDate ? getFoodEmissionWeekly(lastFood) : 0;
     } else {
       newFootprint.allTime.food = 0;
@@ -181,8 +178,32 @@ export async function updateUserCarbonFootprint(user) {
     newFootprint.allTime.house = getHouseEmissionAllTime(user.footprintData.house, programDays) ?? 0;
     newFootprint.weekly.house = getHouseEmissionWeekly(user.footprintData.house) ?? 0;
 
-    newFootprint.allTime.total = newFootprint.allTime.travel + newFootprint.allTime.food + newFootprint.allTime.house;
-    newFootprint.weekly.total = newFootprint.weekly.travel + newFootprint.weekly.food + newFootprint.weekly.house;
+    await Promise.all(user.goals.map(async (goal) => {
+      if (goal.data_isStale) {
+        console.log(`Updating goal data for goal ${goal._id}...`);
+        return updateGoalData(goal);
+      }
+      return Promise.resolve();
+    }));
+
+    newFootprint.reduction.travel = user.goals
+      .filter((goal) => { return goal.theme === 'travel'; })
+      .reduce((total, goal) => { return total + goal.totalCarbonReduction; }, 0);
+    newFootprint.reduction.food = user.goals
+      .filter((goal) => { return goal.theme === 'food'; })
+      .reduce((total, goal) => { return total + goal.totalCarbonReduction; }, 0);
+    newFootprint.reduction.house = user.goals
+      .filter((goal) => { return goal.theme === 'house'; })
+      .reduce((total, goal) => { return total + goal.totalCarbonReduction; }, 0);
+
+    Object.keys(newFootprint).forEach((key) => {
+      newFootprint[key].total = Object.keys(newFootprint[key]).reduce((total, subKey) => {
+        if (subKey !== 'total') {
+          return total + newFootprint[key][subKey];
+        }
+        return total;
+      }, 0);
+    });
 
     user.carbonFootprint = newFootprint;
     user.carbonFootprint_isStale = false;

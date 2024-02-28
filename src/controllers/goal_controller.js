@@ -196,6 +196,7 @@ export async function setGoalStatusForDay(req, res) {
     user.carbonFootprint_isStale = true;
     const team = await Team.findById(user.team);
     team.carbonFootprint_isStale = true;
+    team.leaderboard_isStale = true;
     await team.save();
     await user.save();
     await goal.save();

@@ -1,6 +1,7 @@
 /* eslint-disable no-lonely-if */
 import Goal from '../models/goal_model';
 import User from '../models/user_model';
+import Team from '../models/team_model';
 
 const allGoals = [
   {
@@ -191,6 +192,12 @@ export async function setGoalStatusForDay(req, res) {
     }
     goal.streak.push({ completed: status, date: new Date() });
     goal.data_isStale = true;
+    const user = await User.findOne({ goals: id });
+    user.carbonFootprint_isStale = true;
+    const team = await Team.findById(user.team);
+    team.carbonFootprint_isStale = true;
+    await team.save();
+    await user.save();
     await goal.save();
     return res.json(goal);
   } catch (error) {

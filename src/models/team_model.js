@@ -23,7 +23,7 @@ const teamSchema = new mongoose.Schema({
   carbonFootprint_isStale: { type: Boolean, default: true },
   startDate: { type: Date, default: Date.now, required: true },
   leaderboard: [{
-    userId: { type: String, required: true },
+    userId: { type: Schema.Types.ObjectId, ref: 'User' },
     carbonReduction: { type: Number, default: 0 },
   }],
   leaderboard_isStale: { type: Boolean, default: true },

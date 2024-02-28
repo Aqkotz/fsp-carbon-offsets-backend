@@ -1,10 +1,15 @@
+/* eslint-disable no-nested-ternary */
+/* eslint-disable no-unused-vars */
 import jwt from 'jwt-simple';
 import axios from 'axios';
 import xml2js from 'xml2js';
 import User from '../models/user_model';
-import UserGoal from '../models/user_goal_model';
 import Trip from '../models/trip_model';
-import { getFoodEmissionWeekly, getHouseEmissionEstimated } from '../utilities/carbon_calculation';
+import Team from '../models/team_model';
+import {
+  getFoodEmissionWeekly, getFoodEmissionAllTime, getHouseEmissionWeekly, getHouseEmissionAllTime,
+} from '../utilities/carbon_calculation';
+import { updateGoalData } from './goal_controller';
 
 export const getUsers = async (req, res) => {
   try {
@@ -16,10 +21,12 @@ export const getUsers = async (req, res) => {
 };
 
 export const getUser = async (req, res) => {
-  const userId = req.user._id;
   try {
-    console.log('getUser');
-    const user = await User.findById(userId);
+    const user = await User.findById(req.user._id);
+    if (user.carbonFootprint_isStale) {
+      console.log(`Updating carbon footprint for user ${user.name}...`);
+      await updateUserCarbonFootprint(user);
+    }
     return res.json(user);
   } catch (error) {
     return res.status(400).json({ error: error.message });
@@ -131,26 +138,8 @@ function tokenForUser(user) {
   return jwt.encode({ sub: user.id, iat: timestamp }, process.env.AUTH_SECRET);
 }
 
-export const updateStreaks = async (req, res) => {
-  try {
-    console.log('Updating streaks...');
-    const goals = await UserGoal.find({});
-    goals.forEach((goal) => {
-      console.log('goal: ', goal);
-      goal.streak.push(goal.completedToday);
-      goal.completedToday = false;
-      goal.failed = false;
-      goal.save();
-    });
-    return res.json(goals);
-  } catch (error) {
-    return res.status(400).json({ error: error.message });
-  }
-};
-
 export async function updateUserCarbonFootprint(user) {
   try {
-    // Update carbon footprints for all trips
     await Promise.all(user.trips.map(async (trip) => {
       if (trip.isStale) {
         console.log('Updating carbon footprint for trip: ', trip._id);
@@ -159,40 +148,72 @@ export async function updateUserCarbonFootprint(user) {
       return Promise.resolve();
     }));
 
-    const newFootprint = {};
+    const team = await Team.findById(user.team);
+    const programDays = !team ? 7 : Math.floor((Date.now() - team.startDate) / (1000 * 60 * 60 * 24));
+    const week = !team ? 1 : Math.floor((Date.now() - team.startDate) / (1000 * 60 * 60 * 24 * 7)) + 1;
+    const startDateTimestamp = !team ? 0 : (team.startDate instanceof Date ? team.startDate.getTime() : team.startDate);
+    const weekStartDateTimestamp = !team ? 0 : startDateTimestamp + (week - 1) * 7 * 24 * 60 * 60 * 1000;
+    const weekStartDate = !team ? Date.now() - 7 * 24 * 60 * 60 * 1000 : new Date(weekStartDateTimestamp);
 
-    newFootprint.travel = user.trips
+    const newFootprint = {
+      weekly: {},
+      allTime: {},
+      reduction: {},
+    };
+
+    newFootprint.allTime.travel = user.trips
       .filter((trip) => { return trip !== null && typeof trip.actualCarbonFootprint === 'number'; })
       .reduce((total, trip) => { return total + trip.actualCarbonFootprint; }, 0);
+    newFootprint.weekly.travel = user.trips
+      .filter((trip) => { return trip !== null && typeof trip.actualCarbonFootprint === 'number' && trip.date > weekStartDate; })
+      .reduce((total, trip) => { return total + trip.actualCarbonFootprint; }, 0);
 
-    console.log('user.footprintData.food: ', user.footprintData.food);
-    console.log('weeklyEmission: ', getFoodEmissionWeekly(user.footprintData.food[0]));
-    newFootprint.food = user.footprintData.food.reduce((total, consumption) => { return total + getFoodEmissionWeekly(consumption) ?? 0; }, 0) ?? 0;
-    newFootprint.food = newFootprint.food ? newFootprint.food : 0;
-    newFootprint.house = getHouseEmissionEstimated(user.footprintData.house) ?? 0;
-    newFootprint.total = newFootprint.travel + newFootprint.food + newFootprint.house;
+    if (user.footprintData.food.length > 0) {
+      const lastFood = user.footprintData.food[user.footprintData.food.length - 1];
+      newFootprint.allTime.food = getFoodEmissionAllTime(user.footprintData.food);
+      newFootprint.weekly.food = lastFood.date >= weekStartDate ? getFoodEmissionWeekly(lastFood) : 0;
+    } else {
+      newFootprint.allTime.food = 0;
+      newFootprint.weekly.food = 0;
+    }
+
+    newFootprint.allTime.house = getHouseEmissionAllTime(user.footprintData.house, programDays) ?? 0;
+    newFootprint.weekly.house = getHouseEmissionWeekly(user.footprintData.house) ?? 0;
+
+    await user.populate('goals');
+    await Promise.all(user.goals.map(async (goal) => {
+      if (goal.data_isStale) {
+        console.log(`Updating goal data for goal ${goal._id}...`);
+        return updateGoalData(goal);
+      }
+      return Promise.resolve();
+    }));
+
+    newFootprint.reduction.travel = user.goals
+      .filter((goal) => { return goal.theme === 'travel'; })
+      .reduce((total, goal) => { return total + goal.totalCarbonReduction; }, 0);
+    newFootprint.reduction.food = user.goals
+      .filter((goal) => { return goal.theme === 'food'; })
+      .reduce((total, goal) => { return total + goal.totalCarbonReduction; }, 0);
+    newFootprint.reduction.house = user.goals
+      .filter((goal) => { return goal.theme === 'house'; })
+      .reduce((total, goal) => { return total + goal.totalCarbonReduction; }, 0);
+
+    Object.keys(newFootprint).forEach((key) => {
+      newFootprint[key].total = Object.keys(newFootprint[key]).reduce((total, subKey) => {
+        if (subKey !== 'total') {
+          return total + newFootprint[key][subKey];
+        }
+        return total;
+      }, 0);
+    });
 
     user.carbonFootprint = newFootprint;
     user.carbonFootprint_isStale = false;
     await user.save();
   } catch (error) {
     console.error('Error updating carbon footprints: ', error);
-    throw error; // Rethrow the error to be handled by the caller
-  }
-}
-
-export async function getCarbonFootprint(req, res) {
-  try {
-    let user = await User.findById(req.user._id).populate('trips');
-    if (user.carbonFootprint_isStale) {
-      console.log(`Updating carbon footprint for user ${user.name}...`);
-      await updateUserCarbonFootprint(user);
-      user = await User.findById(req.user._id);
-    }
-    return res.json(user.carbonFootprint);
-  } catch (error) {
-    console.error('Failed to get carbon footprint: ', error);
-    return res.status(400).json({ error: error.message });
+    throw error;
   }
 }
 
@@ -210,7 +231,7 @@ export async function getUserFoodEmission(req, res) {
 export async function getUserHouseEmission(req, res) {
   try {
     const { house } = req.body;
-    const emission = getHouseEmissionEstimated(house);
+    const emission = getHouseEmissionAllTime(house);
     return res.json(emission);
   } catch (error) {
     console.error('Failed to get house emission: ', error);
@@ -225,6 +246,9 @@ export async function addFoodWeeklyConsumption(req, res) {
     consumption.date = new Date();
     user.footprintData.food.push(consumption);
     user.carbonFootprint_isStale = true;
+    const team = await Team.findById(user.team);
+    team.carbonFootprint_isStale = true;
+    team.save();
     await user.save();
     return res.json(user.footprintData.food);
   } catch (error) {
@@ -239,6 +263,9 @@ export async function setHouseData(req, res) {
     const { house } = req.body;
     user.footprintData.house = house;
     user.carbonFootprint_isStale = true;
+    const team = await Team.findById(user.team);
+    team.carbonFootprint_isStale = true;
+    team.save();
     await user.save();
     return res.json(user.footprintData.house);
   } catch (error) {
@@ -264,5 +291,18 @@ export async function getHouse(req, res) {
   } catch (error) {
     console.error('Failed to get house data: ', error);
     return res.status(400).json({ error: error.message });
+  }
+}
+
+export async function setAllUsersStale() {
+  try {
+    const users = await User.find({});
+    await Promise.all(users.map(async (user) => {
+      user.carbonFootprint_isStale = true;
+      await user.save();
+    }));
+  } catch (error) {
+    console.error('Failed to set all users stale: ', error);
+    throw error;
   }
 }

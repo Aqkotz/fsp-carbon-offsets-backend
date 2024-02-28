@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const tripSchema = new mongoose.Schema({
   legs: { type: [String], required: true },
@@ -10,6 +10,7 @@ const tripSchema = new mongoose.Schema({
     car: { type: Number },
   },
   isStale: { type: Boolean, default: true },
+  date: { type: Date, default: Date.now },
 });
 
 const Trip = mongoose.model('Trip', tripSchema);

@@ -6,9 +6,32 @@ import morgan from 'morgan';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import bodyParser from 'body-parser';
-// import schedule from 'node-schedule';
+import schedule from 'node-schedule';
+import moment from 'moment-timezone';
 import apiRoutes from './router';
-// import User from './models/user_model';
+import { setAllGoalsStale } from './controllers/goal_controller';
+import { setAllTeamsStale } from './controllers/team_controller';
+import { setAllUsersStale } from './controllers/user_controller';
+
+// Schedule event for every night at midnight EST/EDT
+const midnightEST = () => {
+  const time = moment().tz('America/New_York').startOf('day').add(1, 'days');
+  const gmtTime = time.clone().tz('GMT');
+  return {
+    hour: gmtTime.hour(),
+    minute: gmtTime.minute(),
+  };
+};
+
+const scheduleMidnightESTJob = () => {
+  const { hour, minute } = midnightEST();
+  schedule.scheduleJob({ hour, minute, tz: 'GMT' }, () => {
+    console.log('Event triggered at midnight EST/EDT');
+    setAllUsersStale();
+    setAllTeamsStale();
+    setAllGoalsStale();
+  });
+};
 
 dotenv.config({ silent: true });
 
@@ -55,15 +78,12 @@ async function startServer() {
     await mongoose.connect(mongoURI);
     console.log(`Mongoose connected to: ${mongoURI}`);
 
+    scheduleMidnightESTJob();
+
     const port = process.env.PORT || 9090;
     app.listen(port);
 
     console.log(`Listening on port ${port}`);
-
-    // schedule.scheduleJob('00 05 * * *', async () => {
-    //   console.log('Scheduler triggered at', new Date().toString());
-    //   await User.updateStreaks();
-    // });
   } catch (error) {
     console.error(error);
   }

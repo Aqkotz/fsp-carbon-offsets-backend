@@ -93,7 +93,6 @@ export const getJoinCode = async (req, res) => {
 export async function updateTeamCarbonFootprint(team) {
   try {
     await team.populate('members');
-    console.log('Updating carbon footprints for team: ', team.name);
     await Promise.all(team.members.map(async (user) => {
       if (user.carbonFootprint_isStale) {
         console.log(`Updating carbon footprint for user ${user.name}...`);
@@ -125,45 +124,24 @@ export async function updateTeamCarbonFootprint(team) {
     newCarbonFootprint.allTime.house = team.members
       .reduce((total, user) => { return total + user.carbonFootprint.allTime.house; }, 0);
 
+    newCarbonFootprint.reduction.travel = team.members
+      .reduce((total, user) => { return total + user.carbonFootprint.reduction.travel; }, 0);
+    newCarbonFootprint.reduction.food = team.members
+      .reduce((total, user) => { return total + user.carbonFootprint.reduction.food; }, 0);
+    newCarbonFootprint.reduction.house = team.members
+      .reduce((total, user) => { return total + user.carbonFootprint.reduction.house; }, 0);
+
     newCarbonFootprint.weekly.total = newCarbonFootprint.weekly.travel + newCarbonFootprint.weekly.food + newCarbonFootprint.weekly.house;
     newCarbonFootprint.allTime.total = newCarbonFootprint.allTime.travel + newCarbonFootprint.allTime.food + newCarbonFootprint.allTime.house;
+    newCarbonFootprint.reduction.total = newCarbonFootprint.reduction.travel + newCarbonFootprint.reduction.food + newCarbonFootprint.reduction.house;
     team.carbonFootprint = newCarbonFootprint;
+    team.carbonFootprint_isStale = false;
 
     await team.save();
   } catch (error) {
     console.error('Error updating carbon footprints: ', error);
     throw error;
   }
-}
-
-export async function getCarbonFootprint(req, res) {
-  try {
-    const user = await User.findById(req.user._id);
-    let team = await Team.findById(user.team).populate('members');
-    if (!team) {
-      return res.status(400).json({ error: 'User not in team' });
-    }
-    if (!team.members.map((member) => { return member.id; }).includes(user.id)) {
-      return res.status(400).json({ error: 'User not in team' });
-    }
-    if (team.carbonFootprint_isStale || team.members.any((member) => { return member.carbonFootprint_isStale; })) {
-      console.log(`Updating carbon footprint for team ${team.name}...`);
-      await updateTeamCarbonFootprint(team);
-      team = await Team.findById(user.team);
-    }
-    return res.json(team.carbonFootprint);
-  } catch (error) {
-    console.error('Failed to get carbon footprint: ', error);
-    return res.status(400).json({ error: error.message });
-  }
-}
-
-export function weekForTeam(team) {
-  return Math.floor((Date.now() - team.startDate) / (1000 * 60 * 60 * 24 * 7)) + 1;
-}
-
-export function programDurationDays(team) {
-  return Math.floor((Date.now() - team.startDate) / (1000 * 60 * 60 * 24));
 }
 
 export async function setAllTeamsStale() {

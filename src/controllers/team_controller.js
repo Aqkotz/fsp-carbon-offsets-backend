@@ -23,12 +23,14 @@ export const getTeamAndUpdate = async (userId) => {
 
 export const createTeam = async (req, res) => {
   try {
-    const team = new Team(req.body);
     const owner = await User.findById(req.user._id);
-    team.joinCode = Math.random().toString(36).substring(2, 7).toUpperCase();
-    team.members.push(owner._id);
-    team.admins.push(owner._id);
-    team.owner = owner._id;
+    const team = new Team({
+      ...req.body,
+      members: [owner._id],
+      admins: [owner._id],
+      owner: owner._id,
+      joinCode: Math.random().toString(36).substring(2, 7).toUpperCase(),
+    });
     owner.team = team._id;
     owner.adminOf = team._id;
     await owner.save();
@@ -46,6 +48,9 @@ export const joinTeam = async (req, res) => {
     const team = await Team.findOne({ joinCode });
     if (!team) {
       return res.status(400).json({ error: 'Team not found' });
+    }
+    if (team.members.includes(user._id)) {
+      return res.status(400).json({ error: 'User is already on team' });
     }
     team.members.push(user._id);
     team.carbonFootprint_isStale = true;

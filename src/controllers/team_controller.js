@@ -117,7 +117,7 @@ export const deleteTeam = async (req, res) => {
       member.adminOf = null;
       return member.save();
     }));
-    await team.remove();
+    await Team.findByIdAndDelete(team._id);
     return res.json({ message: 'Team deleted' });
   } catch (error) {
     return res.status(400).json({ error: error.message });

@@ -24,6 +24,7 @@ export const getTeamAndUpdate = async (userId) => {
 export const createTeam = async (req, res) => {
   try {
     const owner = await User.findById(req.user._id);
+    console.log('req.body: ', req.body);
     const team = new Team({
       ...req.body,
       members: [owner._id],

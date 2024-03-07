@@ -2,10 +2,10 @@ import mongoose, { Schema } from 'mongoose';
 
 const teamSchema = new mongoose.Schema({
   name: { type: String, required: true },
-  description: { type: String },
   members: [{ type: Schema.Types.ObjectId, required: true, ref: 'User' }],
   admins: [{ type: Schema.Types.ObjectId, required: true, ref: 'User' }],
-  joinCode: { type: String },
+  owner: { type: Schema.Types.ObjectId, required: true, ref: 'User' },
+  joinCode: { type: String, required: true },
   carbonFootprint: {
     weekly: {
       total: { type: Number, default: 0 },

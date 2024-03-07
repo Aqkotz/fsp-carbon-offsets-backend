@@ -42,7 +42,7 @@ router.post('/posts/:id', requireAuth, Post.updatePost);
 
 router.get('/posts/theme/:theme', requireAuth, Post.getPostsByTheme);
 
-router.post('/teams', Team.createTeam);
+router.post('/teams', requireAuth, Team.createTeam);
 
 router.get('/teams', requireAuth, Team.getTeam);
 
@@ -51,6 +51,12 @@ router.post('/teams/join', requireAuth, Team.joinTeam);
 router.get('/teams/joincode', requireAuth, Team.getJoinCode);
 
 router.post('/teams/leave', requireAuth, Team.leaveTeam);
+
+router.post('/teams/transfer', requireAuth, Team.transferOwnership);
+
+router.post('/teams/admin', requireAuth, Team.addAdmin);
+
+router.delete('/teams', requireAuth, Team.deleteTeam);
 
 router.post('/user/foodemissions', Users.getUserFoodEmission);
 

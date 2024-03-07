@@ -23,8 +23,17 @@ export const getTeamAndUpdate = async (userId) => {
 
 export const createTeam = async (req, res) => {
   try {
-    const team = new Team(req.body);
-    team.joinCode = Math.random().toString(36).substring(2, 7).toUpperCase();
+    const owner = await User.findById(req.user._id);
+    const team = new Team({
+      ...req.body,
+      members: [owner._id],
+      admins: [owner._id],
+      owner: owner._id,
+      joinCode: Math.random().toString(36).substring(2, 7).toUpperCase(),
+    });
+    owner.team = team._id;
+    owner.adminOf = team._id;
+    await owner.save();
     await team.save();
     return res.status(201).json(team);
   } catch (error) {
@@ -39,6 +48,9 @@ export const joinTeam = async (req, res) => {
     const team = await Team.findOne({ joinCode });
     if (!team) {
       return res.status(400).json({ error: 'Team not found' });
+    }
+    if (team.members.includes(user._id)) {
+      return res.status(400).json({ error: 'User is already on team' });
     }
     team.members.push(user._id);
     team.carbonFootprint_isStale = true;
@@ -56,9 +68,17 @@ export const leaveTeam = async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
     const team = await getTeamAndUpdate(user._id);
+    if (!team) {
+      return res.status(400).json({ error: 'User is not on a team' });
+    }
+    if (team.owner.equals(user._id)) {
+      return res.status(400).json({ error: 'Owner cannot leave team' });
+    }
     team.members.pull(user.id);
+    team.admins.pull(user.id);
     team.carbonFootprint_isStale = true;
     user.team = null;
+    user.adminOf = null;
     await team.save();
     await user.save();
     return res.json(team);
@@ -67,9 +87,77 @@ export const leaveTeam = async (req, res) => {
   }
 };
 
+export const transferOwnership = async (req, res) => {
+  try {
+    const { newOwner } = req.body;
+    const user = await User.findById(req.user._id);
+    const team = await getTeamAndUpdate(user._id);
+    if (!team) {
+      return res.status(400).json({ error: 'User is not on a team' });
+    }
+    if (!team.admins.includes(newOwner)) {
+      return res.status(400).json({ error: 'New owner is not an admin' });
+    }
+    team.owner = newOwner;
+    await team.save();
+    return res.json(team);
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+};
+
+export const addAdmin = async (req, res) => {
+  try {
+    const { newAdmin } = req.body;
+    const admin = await User.findById(newAdmin);
+    if (!admin) {
+      return res.status(400).json({ error: 'User not found' });
+    }
+    const user = await User.findById(req.user._id);
+    const team = await getTeamAndUpdate(user._id);
+    if (!team) {
+      return res.status(400).json({ error: 'User is not on a team' });
+    }
+    if (!team.members.includes(newAdmin)) {
+      return res.status(400).json({ error: 'New admin is not a member' });
+    }
+    admin.adminOf = team._id;
+    team.admins.push(newAdmin);
+    await team.save();
+    await admin.save();
+    return res.json(team);
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+};
+
+export const deleteTeam = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    const team = await getTeamAndUpdate(user._id);
+    if (!team) {
+      return res.status(400).json({ error: 'User is not on a team' });
+    }
+    await team.populate('members');
+    if (!team.owner.equals(user._id)) {
+      return res.status(400).json({ error: 'User is not the owner' });
+    }
+    await Promise.all(team.members.map(async (member) => {
+      member.team = null;
+      member.adminOf = null;
+      return member.save();
+    }));
+    await Team.findByIdAndDelete(team._id);
+    return res.json({ message: 'Team deleted' });
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+};
+
 export const getTeam = async (req, res) => {
   try {
     const team = await getTeamAndUpdate(req.user._id);
+    await team.populate('members');
     return res.json(team);
   } catch (error) {
     return res.status(400).json({ error: error.message });

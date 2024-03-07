@@ -54,6 +54,8 @@ router.post('/teams/leave', requireAuth, Team.leaveTeam);
 
 router.post('/teams/transfer', requireAuth, Team.transferOwnership);
 
+router.post('/teams/admin', requireAuth, Team.addAdmin);
+
 router.delete('/teams', requireAuth, Team.deleteTeam);
 
 router.post('/user/foodemissions', Users.getUserFoodEmission);

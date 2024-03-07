@@ -42,7 +42,7 @@ router.post('/posts/:id', requireAuth, Post.updatePost);
 
 router.get('/posts/theme/:theme', requireAuth, Post.getPostsByTheme);
 
-router.post('/teams', Team.createTeam);
+router.post('/teams', requireAuth, Team.createTeam);
 
 router.get('/teams', requireAuth, Team.getTeam);
 

@@ -106,6 +106,31 @@ export const transferOwnership = async (req, res) => {
   }
 };
 
+export const addAdmin = async (req, res) => {
+  try {
+    const { newAdmin } = req.body;
+    const admin = await User.findById(newAdmin);
+    if (!admin) {
+      return res.status(400).json({ error: 'User not found' });
+    }
+    const user = await User.findById(req.user._id);
+    const team = await getTeamAndUpdate(user._id);
+    if (!team) {
+      return res.status(400).json({ error: 'User is not on a team' });
+    }
+    if (!team.members.includes(newAdmin)) {
+      return res.status(400).json({ error: 'New admin is not a member' });
+    }
+    admin.adminOf = team._id;
+    team.admins.push(newAdmin);
+    await team.save();
+    await admin.save();
+    return res.json(team);
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+};
+
 export const deleteTeam = async (req, res) => {
   try {
     const user = await User.findById(req.user._id);

@@ -157,6 +157,9 @@ export const deleteTeam = async (req, res) => {
 export const getTeam = async (req, res) => {
   try {
     const team = await getTeamAndUpdate(req.user._id);
+    if (!team) {
+      return null;
+    }
     await team.populate('members');
     return res.json(team);
   } catch (error) {

@@ -105,6 +105,7 @@ export const deleteTeam = async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
     const team = await getTeamAndUpdate(user._id);
+    console.log(`user id: ${user._id}, owner id: ${team.owner}`);
     if (!team) {
       return res.status(400).json({ error: 'User is not on a team' });
     }

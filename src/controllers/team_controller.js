@@ -104,10 +104,11 @@ export const transferOwnership = async (req, res) => {
 export const deleteTeam = async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
-    const team = await getTeamAndUpdate(user._id).populate('members');
+    const team = await getTeamAndUpdate(user._id);
     if (!team) {
       return res.status(400).json({ error: 'User is not on a team' });
     }
+    await team.populate('members');
     if (!team.owner.equals(user._id)) {
       return res.status(400).json({ error: 'User is not the owner' });
     }

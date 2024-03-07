@@ -52,6 +52,10 @@ router.get('/teams/joincode', requireAuth, Team.getJoinCode);
 
 router.post('/teams/leave', requireAuth, Team.leaveTeam);
 
+router.post('/teams/transfer', requireAuth, Team.transferOwnership);
+
+router.delete('/teams', requireAuth, Team.deleteTeam);
+
 router.post('/user/foodemissions', Users.getUserFoodEmission);
 
 router.post('/user/houseemissions', Users.getUserHouseEmission);

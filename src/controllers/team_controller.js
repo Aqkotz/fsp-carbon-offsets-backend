@@ -24,7 +24,14 @@ export const getTeamAndUpdate = async (userId) => {
 export const createTeam = async (req, res) => {
   try {
     const team = new Team(req.body);
+    const owner = await User.findById(req.user._id);
     team.joinCode = Math.random().toString(36).substring(2, 7).toUpperCase();
+    team.members.push(owner._id);
+    team.admins.push(owner._id);
+    team.owner = owner._id;
+    owner.team = team._id;
+    owner.adminOf = team._id;
+    await owner.save();
     await team.save();
     return res.status(201).json(team);
   } catch (error) {
@@ -56,12 +63,61 @@ export const leaveTeam = async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
     const team = await getTeamAndUpdate(user._id);
+    if (!team) {
+      return res.status(400).json({ error: 'User is not on a team' });
+    }
+    if (team.owner.equals(user._id)) {
+      return res.status(400).json({ error: 'Owner cannot leave team' });
+    }
     team.members.pull(user.id);
+    team.admins.pull(user.id);
     team.carbonFootprint_isStale = true;
     user.team = null;
+    user.adminOf = null;
     await team.save();
     await user.save();
     return res.json(team);
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+};
+
+export const transferOwnership = async (req, res) => {
+  try {
+    const { newOwner } = req.body;
+    const user = await User.findById(req.user._id);
+    const team = await getTeamAndUpdate(user._id);
+    if (!team) {
+      return res.status(400).json({ error: 'User is not on a team' });
+    }
+    if (!team.admins.includes(newOwner)) {
+      return res.status(400).json({ error: 'New owner is not an admin' });
+    }
+    team.owner = newOwner;
+    await team.save();
+    return res.json(team);
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+};
+
+export const deleteTeam = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    const team = await getTeamAndUpdate(user._id);
+    if (!team) {
+      return res.status(400).json({ error: 'User is not on a team' });
+    }
+    if (!team.owner.equals(user._id)) {
+      return res.status(400).json({ error: 'User is not the owner' });
+    }
+    await Promise.all(team.members.map(async (member) => {
+      member.team = null;
+      member.adminOf = null;
+      return member.save();
+    }));
+    await team.remove();
+    return res.json({ message: 'Team deleted' });
   } catch (error) {
     return res.status(400).json({ error: error.message });
   }

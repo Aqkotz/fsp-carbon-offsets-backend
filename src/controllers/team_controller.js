@@ -186,7 +186,9 @@ export const deleteTeam = async (req, res) => {
 
 export const getTeam = async (req, res) => {
   try {
-    const team = await getTeamAndUpdate(req.user._id);
+    const user = await User.findById(req.user._id);
+    const team = await Team.findById(user.team);
+    // const team = await getTeamAndUpdate(req.user._id);
     if (!team) {
       console.log('Team not found');
       return null;

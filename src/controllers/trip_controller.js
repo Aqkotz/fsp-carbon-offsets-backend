@@ -2,7 +2,7 @@ import axios from 'axios';
 import Trip from '../models/trip_model';
 import User from '../models/user_model';
 import Team from '../models/team_model';
-import { updateTeamCarbonFootprint } from './team_controller';
+import { getTeamAndUpdate } from './team_controller';
 import { updateUserCarbonFootprint } from './user_controller';
 
 // Update a trip
@@ -193,12 +193,7 @@ export async function getCarbonFootprint(req, res) {
       await updateUserCarbonFootprint(user);
       user = await User.findById(req.user._id);
     }
-    let team = user.team ? await Team.findById(user.team) : null;
-    if (team && team.carbonFootprint_isStale) {
-      console.log(`Updating carbon footprint for team ${team.name}...`);
-      await updateTeamCarbonFootprint(team);
-      team = await Team.findById(user.team);
-    }
+    const team = await getTeamAndUpdate(user._id);
     const footprint = {
       user: user.carbonFootprint,
       team: team?.carbonFootprint,
@@ -209,3 +204,21 @@ export async function getCarbonFootprint(req, res) {
     return res.status(400).json({ error: error.message });
   }
 }
+
+export const getUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (user.carbonFootprint_isStale) {
+      console.log(`Updating carbon footprint for user ${user.name}...`);
+      await updateUserCarbonFootprint(user);
+    }
+    if (user.team) {
+      const team = await getTeamAndUpdate(user._id);
+      const leaderboardPosition = team.leaderboard.findIndex((entry) => { return entry.user.equals(user._id); });
+      return res.json({ ...user, leaderboardPosition });
+    }
+    return res.json(user);
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+};

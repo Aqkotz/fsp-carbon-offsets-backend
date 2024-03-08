@@ -20,19 +20,6 @@ export const getUsers = async (req, res) => {
   }
 };
 
-export const getUser = async (req, res) => {
-  try {
-    const user = await User.findById(req.user._id);
-    if (user.carbonFootprint_isStale) {
-      console.log(`Updating carbon footprint for user ${user.name}...`);
-      await updateUserCarbonFootprint(user);
-    }
-    return res.json(user);
-  } catch (error) {
-    return res.status(400).json({ error: error.message });
-  }
-};
-
 export const signin = (user) => {
   return tokenForUser(user);
 };

@@ -18,7 +18,7 @@ router.post('/validate', Users.validateTicket);
 router.post('/signin', requireSignin, Users.signin);
 
 // User routes
-router.get('/user', requireAuth, Users.getUser);
+router.get('/user', requireAuth, Trips.getUser);
 
 router.get('/carbonfootprint', requireAuth, Trips.getCarbonFootprint);
 

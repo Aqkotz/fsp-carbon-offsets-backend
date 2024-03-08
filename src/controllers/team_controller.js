@@ -188,9 +188,11 @@ export const getTeam = async (req, res) => {
   try {
     const team = await getTeamAndUpdate(req.user._id);
     if (!team) {
+      console.log('Team not found');
       return null;
     }
     await team.populate('members');
+    console.log('Team: ', team);
     return res.json(team);
   } catch (error) {
     return res.status(400).json({ error: error.message });

@@ -5,6 +5,7 @@ const UserSchema = new Schema({
   netid: { type: String, unique: true },
   password: { type: String },
   goals: [{ type: Schema.Types.ObjectId, ref: 'Goal' }],
+  pastGoals: [{ type: Schema.Types.ObjectId, ref: 'Goal' }],
   name: { type: String },
   carbonFootprint: {
     weekly: {

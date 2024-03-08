@@ -131,6 +131,36 @@ export const addAdmin = async (req, res) => {
   }
 };
 
+export const removeAdmin = async (req, res) => {
+  try {
+    const { oldAdmin } = req.body;
+    const admin = await User.findById(oldAdmin);
+    if (!admin) {
+      return res.status(400).json({ error: 'User not found' });
+    }
+    const team = await getTeamAndUpdate(oldAdmin);
+    if (!team.admins.includes(req.user._id)) {
+      return res.status(400).json({ error: 'Remover is not an admin' });
+    }
+    if (!team) {
+      return res.status(400).json({ error: 'User is not on a team' });
+    }
+    if (!team.admins.includes(oldAdmin)) {
+      return res.status(400).json({ error: 'Target is not an admin' });
+    }
+    if (team.owner.equals(oldAdmin)) {
+      return res.status(400).json({ error: 'Owner cannot be removed' });
+    }
+    team.admins.pull(oldAdmin);
+    admin.adminOf = null;
+    await team.save();
+    await admin.save();
+    return res.json(team);
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+};
+
 export const deleteTeam = async (req, res) => {
   try {
     const user = await User.findById(req.user._id);

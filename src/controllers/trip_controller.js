@@ -201,7 +201,7 @@ export async function getCarbonFootprint(req, res) {
     }
     const footprint = {
       user: user.carbonFootprint,
-      team: team.carbonFootprint,
+      team: team?.carbonFootprint,
     };
     return res.json(footprint);
   } catch (error) {

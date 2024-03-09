@@ -297,6 +297,9 @@ export async function testRequest(req, res) {
     // const user = await User.findById(req.user._id);
     // const team = await Team.findById(user.team);
     const team = await getTeamAndUpdate(req.user._id);
+    if (team) {
+      await team.populate('members');
+    }
     return res.json(team);
   } catch (error) {
     console.error('Failed to test request: ', error);

@@ -172,6 +172,7 @@ export async function getGoals(req, res) {
 export async function getPastGoals(req, res) {
   try {
     const user = await User.findById(req.user._id);
+    console.log('User: ', user);
     await user.populate('pastGoals');
     const { pastGoals } = user;
     return res.json(pastGoals);

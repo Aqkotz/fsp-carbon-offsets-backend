@@ -212,12 +212,13 @@ export const getUser = async (req, res) => {
       console.log(`Updating carbon footprint for user ${user.name}...`);
       await updateUserCarbonFootprint(user);
     }
+    const userData = user.toObject();
     if (user.team) {
       const team = await getTeamAndUpdate(user._id);
-      const leaderboardPosition = team.leaderboard.findIndex((entry) => { return entry.userId.equals(user._id); });
-      return res.json({ ...user, leaderboardPosition });
+      const leaderboardPosition = team.leaderboard.findIndex((entry) => { return entry.userId.equals(user._id); }) + 1;
+      return res.json({ ...userData, leaderboardPosition });
     }
-    return res.json({ ...user, leaderboardPosition: null });
+    return res.json({ ...userData, leaderboardPosition: null });
   } catch (error) {
     return res.status(400).json({ error: error.message });
   }

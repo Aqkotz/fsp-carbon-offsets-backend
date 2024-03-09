@@ -293,3 +293,14 @@ export async function setAllUsersStale() {
     throw error;
   }
 }
+
+export async function testRequest(req, res) {
+  try {
+    const user = await User.findById(req.user._id);
+    const team = await Team.findById(user.team);
+    return res.json(team);
+  } catch (error) {
+    console.error('Failed to test request: ', error);
+    return res.status(400).json({ error: error.message });
+  }
+}

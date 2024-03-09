@@ -217,7 +217,7 @@ export const getUser = async (req, res) => {
       const leaderboardPosition = team.leaderboard.findIndex((entry) => { return entry.userId.equals(user._id); });
       return res.json({ ...user, leaderboardPosition });
     }
-    return res.json(user);
+    return res.json({ ...user, leaderboardPosition: null });
   } catch (error) {
     return res.status(400).json({ error: error.message });
   }

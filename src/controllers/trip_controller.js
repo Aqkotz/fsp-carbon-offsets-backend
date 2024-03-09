@@ -214,7 +214,7 @@ export const getUser = async (req, res) => {
     }
     if (user.team) {
       const team = await getTeamAndUpdate(user._id);
-      const leaderboardPosition = team.leaderboard.findIndex((entry) => { return entry.user.equals(user._id); });
+      const leaderboardPosition = team.leaderboard.findIndex((entry) => { return entry.userId.equals(user._id); });
       return res.json({ ...user, leaderboardPosition });
     }
     return res.json(user);

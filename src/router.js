@@ -84,9 +84,9 @@ router.get('/goals/:theme', Goal.getGoalsByTheme);
 
 router.post('/goals', requireAuth, Goal.setGoal);
 
-router.get('/goals', requireAuth, Goal.getGoals);
+router.get('/goals/past', requireAuth, Goal.getPastGoals);
 
-router.get('/testpastgoals', requireAuth, Goal.getPastGoals);
+router.get('/goals', requireAuth, Goal.getGoals);
 
 router.delete('/goals/:id', requireAuth, Goal.deleteGoal);
 

@@ -54,6 +54,7 @@ export const joinTeam = async (req, res) => {
     }
     team.members.push(user._id);
     team.carbonFootprint_isStale = true;
+    team.leaderboard_isStale = true;
     user.team = team._id;
     await team.save();
     await user.save();

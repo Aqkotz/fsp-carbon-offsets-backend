@@ -216,9 +216,13 @@ export const getUser = async (req, res) => {
     if (user.team) {
       const team = await getTeamAndUpdate(user._id);
       const leaderboardPosition = team.leaderboard.findIndex((entry) => { return entry.userId.equals(user._id); }) + 1;
-      return res.json({ ...userData, leaderboardPosition });
+      let isOwner = false;
+      if (team.owner) {
+        isOwner = team.owner.equals(user._id);
+      }
+      return res.json({ ...userData, leaderboardPosition, isOwner });
     }
-    return res.json({ ...userData, leaderboardPosition: null });
+    return res.json({ ...userData, leaderboardPosition: null, isOwner: false });
   } catch (error) {
     return res.status(400).json({ error: error.message });
   }

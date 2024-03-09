@@ -284,6 +284,7 @@ export async function updateLeaderboardForTeam(team) {
       };
     });
     leaderboard.sort((a, b) => { return b.carbonReduction - a.carbonReduction; });
+    leaderboard.splice(10);
     team.leaderboard = leaderboard;
     team.leaderboard_isStale = false;
     await team.save();
@@ -295,8 +296,6 @@ export async function updateLeaderboardForTeam(team) {
 
 export async function testRequest(req, res) {
   try {
-    // const user = await User.findById(req.user._id);
-    // const team = await Team.findById(user.team);
     const team = await getTeamAndUpdate(req.user._id);
     if (team) {
       await team.populate('members');

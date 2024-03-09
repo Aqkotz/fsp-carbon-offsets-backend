@@ -95,6 +95,6 @@ router.post('/goals/status/:id', requireAuth, Goal.setGoalStatusForDay);
 router.post('/goals/past/:id', requireAuth, Goal.setGoalPast);
 
 // Test routes
-router.get('/testrequest', requireAuth, Users.testRequest);
+router.get('/testrequest', requireAuth, Team.testRequest);
 
 export default router;

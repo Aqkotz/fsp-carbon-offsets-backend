@@ -86,9 +86,7 @@ router.post('/goals', requireAuth, Goal.setGoal);
 
 router.get('/goals', requireAuth, Goal.getGoals);
 
-router.get('/goals/past', requireAuth, (req, res) => {
-  console.log('Getting past goals');
-});
+router.get('/testpastgoals', requireAuth, Goal.getPastGoals);
 
 router.delete('/goals/:id', requireAuth, Goal.deleteGoal);
 

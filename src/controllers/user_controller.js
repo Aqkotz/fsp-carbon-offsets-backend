@@ -141,6 +141,7 @@ export async function updateUserCarbonFootprint(user) {
       weekly: {},
       allTime: {},
       reduction: {},
+      weeklyReduction: {},
     };
 
     newFootprint.allTime.travel = user.trips
@@ -180,6 +181,16 @@ export async function updateUserCarbonFootprint(user) {
     newFootprint.reduction.house = user.goals
       .filter((goal) => { return goal.theme === 'house'; })
       .reduce((total, goal) => { return total + goal.totalCarbonReduction; }, 0);
+
+    newFootprint.weeklyReduction.travel = user.goals
+      .filter((goal) => { return goal.theme === 'travel'; })
+      .reduce((total, goal) => { return total + goal.currentWeek.reduce((weekTotal, entry) => { return weekTotal + (entry.completed === 'completed' ? goal.carbonReduction : 0); }, 0); }, 0);
+    newFootprint.weeklyReduction.food = user.goals
+      .filter((goal) => { return goal.theme === 'food'; })
+      .reduce((total, goal) => { return total + goal.currentWeek.reduce((weekTotal, entry) => { return weekTotal + (entry.completed === 'completed' ? goal.carbonReduction : 0); }, 0); }, 0);
+    newFootprint.weeklyReduction.house = user.goals
+      .filter((goal) => { return goal.theme === 'house'; })
+      .reduce((total, goal) => { return total + goal.currentWeek.reduce((weekTotal, entry) => { return weekTotal + (entry.completed === 'completed' ? goal.carbonReduction : 0); }, 0); }, 0);
 
     Object.keys(newFootprint).forEach((key) => {
       newFootprint[key].total = Object.keys(newFootprint[key]).reduce((total, subKey) => {

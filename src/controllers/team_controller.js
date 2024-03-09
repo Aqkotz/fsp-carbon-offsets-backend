@@ -241,6 +241,7 @@ export async function updateTeamCarbonFootprint(team) {
       weekly: { total: 0 },
       allTime: { total: 0 },
       reduction: { total: 0 },
+      weeklyReduction: { total: 0 },
     };
 
     categories.forEach((category) => {

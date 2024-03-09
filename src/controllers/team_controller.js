@@ -88,23 +88,14 @@ export const leaveTeam = async (req, res) => {
   }
 };
 
-export const transferOwnership = async (req, res) => {
-  try {
-    const { newOwner } = req.body;
-    const user = await User.findById(req.user._id);
-    const team = await getTeamAndUpdate(user._id);
-    if (!team) {
-      return res.status(400).json({ error: 'User is not on a team' });
-    }
-    if (!team.admins.includes(newOwner)) {
-      return res.status(400).json({ error: 'New owner is not an admin' });
-    }
-    team.owner = newOwner;
-    await team.save();
-    return res.json(team);
-  } catch (error) {
-    return res.status(400).json({ error: error.message });
-  }
+const setUserAdmin = async (adminId) => {
+  const admin = await User.findById(adminId);
+  const team = await getTeamAndUpdate(admin._id);
+  admin.adminOf = team._id;
+  team.admins.push(admin._id);
+  await team.save();
+  await admin.save();
+  return team;
 };
 
 export const addAdmin = async (req, res) => {
@@ -122,10 +113,29 @@ export const addAdmin = async (req, res) => {
     if (!team.members.includes(newAdmin)) {
       return res.status(400).json({ error: 'New admin is not a member' });
     }
-    admin.adminOf = team._id;
-    team.admins.push(newAdmin);
+    if (team.admins.includes(newAdmin)) {
+      return res.status(400).json({ error: 'New admin is already an admin' });
+    }
+    await setUserAdmin(newAdmin);
+    return res.json(team);
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+};
+
+export const transferOwnership = async (req, res) => {
+  try {
+    const { newOwner } = req.body;
+    const user = await User.findById(req.user._id);
+    const team = await getTeamAndUpdate(user._id);
+    if (!team) {
+      return res.status(400).json({ error: 'User is not on a team' });
+    }
+    if (!team.admins.includes(newOwner)) {
+      await setUserAdmin(newOwner);
+    }
+    team.owner = newOwner;
     await team.save();
-    await admin.save();
     return res.json(team);
   } catch (error) {
     return res.status(400).json({ error: error.message });

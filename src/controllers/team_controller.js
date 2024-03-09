@@ -197,15 +197,13 @@ export const deleteTeam = async (req, res) => {
 
 export const getTeam = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id);
-    const team = await Team.findById(user.team);
-    // const team = await getTeamAndUpdate(req.user._id);
+    // const user = await User.findById(req.user._id);
+    // const team = await Team.findById(user.team);
+    const team = await getTeamAndUpdate(req.user._id);
     if (!team) {
-      console.log('Team not found');
       return null;
     }
     await team.populate('members');
-    console.log('Team: ', team);
     return res.json(team);
   } catch (error) {
     return res.status(400).json({ error: error.message });
@@ -219,7 +217,6 @@ export const getJoinCode = async (req, res) => {
     if (!team) {
       return res.status(400).json({ error: 'User is not an admin' });
     }
-    console.log(team.joinCode);
     return res.json(team.joinCode);
   } catch (error) {
     return res.status(400).json({ error: error.message });
@@ -236,10 +233,6 @@ export async function updateTeamCarbonFootprint(team) {
       }
       return Promise.resolve();
     }));
-
-    team.members.forEach((member) => {
-      console.log('member: ', member);
-    });
 
     const categories = ['weekly', 'allTime', 'reduction'];
     const types = ['travel', 'food', 'house'];

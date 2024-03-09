@@ -142,6 +142,9 @@ export async function getGoalsByTheme(req, res) {
 export async function setGoal(req, res) {
   try {
     const user = await User.findById(req.user._id);
+    if (user.goals.length >= 3) {
+      return res.status(400).json({ error: 'User already has 3 goals' });
+    }
     const goal = new Goal(req.body);
     await goal.save();
     user.goals.push(goal);
@@ -171,9 +174,7 @@ export async function getGoals(req, res) {
 
 export async function getPastGoals(req, res) {
   try {
-    console.log('Getting past goals');
     const user = await User.findById(req.user._id);
-    console.log('User: ', user);
     await user.populate('pastGoals');
     const { pastGoals } = user;
     return res.json(pastGoals);
@@ -267,12 +268,9 @@ function currentWeekForGoal(goal) {
 
 export async function updateGoalData(goal) {
   try {
-    console.log('Updating goal data', goal.description);
     const totalCarbonReduction = goal.streak.reduce((total, streak) => {
       return total + (streak.completed === 'completed' ? goal.carbonReduction : 0) ?? 0;
     }, 0) ?? 0;
-
-    console.log(totalCarbonReduction);
 
     goal.currentWeek = currentWeekForGoal(goal);
     goal.streakLength = 0;

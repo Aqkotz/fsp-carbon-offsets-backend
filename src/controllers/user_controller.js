@@ -58,8 +58,6 @@ async function handleCasAuthenticationSuccess(result) {
   if (existingUser) {
     // const { goals } = existingUser;
     // await User.findOneAndDelete({ netid });
-    // console.log(User.findOne({ netid }));
-    // console.log('goals: ', goals);
     // const user = {
     //   netid,
     //   password: uid,
@@ -77,13 +75,10 @@ async function handleCasAuthenticationSuccess(result) {
         name,
         goals: [],
       };
-      console.log('user: ', user);
       const { token, newUser } = await createUser(user);
-      console.log('newUser: ', newUser);
-      console.log('token: ', token);
       return { token, newUser };
     } catch (error) {
-      console.log('error: ', error);
+      console.log('error creating user: ', error);
       throw new Error(error.toString());
     }
   }

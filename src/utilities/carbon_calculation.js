@@ -504,7 +504,6 @@ export function getHouseEmissionWeekly(house) {
 
   // Get the factor emission from study - kWh/(m².year)
   const emissionFactor = data.consumptionFactors?.[house.built]?.[house.type]?.[house.heater]?.emissionFactor;
-  console.log(`emissionFactor for ${house.built}: ${emissionFactor}`);
   if (!emissionFactor || emissionFactor < 0) return null;
 
   // Retrieve the combustible Factor - kgCO2e/kW

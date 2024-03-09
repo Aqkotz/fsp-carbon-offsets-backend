@@ -66,7 +66,6 @@ UserSchema.pre('save', async function beforeYourModelSave(next) {
 
 // function to compare a password and return a boolean
 UserSchema.methods.comparePassword = async function comparePassword(candidatePassword) {
-  console.log('comparePassword', candidatePassword, this.password);
   const comparison = await bcrypt.compare(candidatePassword, this.password);
   return comparison;
 };

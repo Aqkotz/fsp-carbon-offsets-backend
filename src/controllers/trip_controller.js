@@ -101,9 +101,6 @@ export const getCarbonFootprints = async (trip) => {
       car: carbonFootprints[2].footprint,
       legs: carbonFootprints[0].stops,
     };
-
-    console.log('Carbon footprints: ', out);
-
     return out;
   } catch (error) {
     console.error('Error calculating carbon footprints: ', error);
@@ -171,14 +168,10 @@ export const getTrips = async (req, res) => {
 };
 
 export const getTripEstimate = async (req, res) => {
-  console.log('Getting trip estimate...');
   try {
     const { legs, modeOfTravel } = req.body;
-    console.log('Legs: ', legs);
     const trip = new Trip({ legs, modeOfTravel });
-    console.log('Trip: ', trip);
     const carbonFootprints = await getCarbonFootprints(trip);
-    console.log('Carbon footprints: ', carbonFootprints);
     return res.json(carbonFootprints);
   } catch (error) {
     return res.status(400).json({ error: error.message });

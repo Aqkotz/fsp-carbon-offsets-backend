@@ -171,7 +171,9 @@ export async function getGoals(req, res) {
 
 export async function getPastGoals(req, res) {
   try {
-    const { pastGoals } = await User.findById(req.user._id).populate('pastGoals');
+    const user = await User.findById(req.user._id);
+    await user.populate('pastGoals');
+    const { pastGoals } = user;
     return res.json(pastGoals);
   } catch (error) {
     return res.status(400).json({ error: error.message });

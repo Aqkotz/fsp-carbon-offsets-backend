@@ -10,12 +10,21 @@ import schedule from 'node-schedule';
 import moment from 'moment-timezone';
 import apiRoutes from './router';
 import { setAllGoalsStale } from './controllers/goal_controller';
-import { setAllTeamsStale } from './controllers/team_controller';
+import { setAllTeamsStale, setTeamGoalsPast } from './controllers/team_controller';
 import { setAllUsersStale } from './controllers/user_controller';
 
 // Schedule event for every night at midnight EST/EDT
 const midnightEST = () => {
   const time = moment().tz('America/New_York').startOf('day').add(1, 'days');
+  const gmtTime = time.clone().tz('GMT');
+  return {
+    hour: gmtTime.hour(),
+    minute: gmtTime.minute(),
+  };
+};
+
+const sundayMidnightEST = () => {
+  const time = moment().tz('America/New_York').startOf('week').add(1, 'weeks');
   const gmtTime = time.clone().tz('GMT');
   return {
     hour: gmtTime.hour(),
@@ -30,6 +39,14 @@ const scheduleMidnightESTJob = () => {
     setAllUsersStale();
     setAllTeamsStale();
     setAllGoalsStale();
+  });
+};
+
+const scheduleSundayMidnightESTJob = () => {
+  const { hour, minute } = sundayMidnightEST();
+  schedule.scheduleJob({ hour, minute, tz: 'GMT' }, () => {
+    console.log('Event triggered at midnight EST/EDT');
+    setTeamGoalsPast();
   });
 };
 
@@ -79,6 +96,7 @@ async function startServer() {
     console.log(`Mongoose connected to: ${mongoURI}`);
 
     scheduleMidnightESTJob();
+    scheduleSundayMidnightESTJob();
 
     const port = process.env.PORT || 9090;
     app.listen(port);

@@ -54,6 +54,7 @@ export const joinTeam = async (req, res) => {
     }
     team.members.push(user._id);
     team.carbonFootprint_isStale = true;
+    team.leaderboard_isStale = true;
     user.team = team._id;
     await team.save();
     await user.save();
@@ -87,23 +88,14 @@ export const leaveTeam = async (req, res) => {
   }
 };
 
-export const transferOwnership = async (req, res) => {
-  try {
-    const { newOwner } = req.body;
-    const user = await User.findById(req.user._id);
-    const team = await getTeamAndUpdate(user._id);
-    if (!team) {
-      return res.status(400).json({ error: 'User is not on a team' });
-    }
-    if (!team.admins.includes(newOwner)) {
-      return res.status(400).json({ error: 'New owner is not an admin' });
-    }
-    team.owner = newOwner;
-    await team.save();
-    return res.json(team);
-  } catch (error) {
-    return res.status(400).json({ error: error.message });
-  }
+const setUserAdmin = async (adminId) => {
+  const admin = await User.findById(adminId);
+  const team = await getTeamAndUpdate(admin._id);
+  admin.adminOf = team._id;
+  team.admins.push(admin._id);
+  await team.save();
+  await admin.save();
+  return team;
 };
 
 export const addAdmin = async (req, res) => {
@@ -121,8 +113,57 @@ export const addAdmin = async (req, res) => {
     if (!team.members.includes(newAdmin)) {
       return res.status(400).json({ error: 'New admin is not a member' });
     }
-    admin.adminOf = team._id;
-    team.admins.push(newAdmin);
+    if (team.admins.includes(newAdmin)) {
+      return res.status(400).json({ error: 'New admin is already an admin' });
+    }
+    await setUserAdmin(newAdmin);
+    return res.json(team);
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+};
+
+export const transferOwnership = async (req, res) => {
+  try {
+    const { newOwner } = req.body;
+    const user = await User.findById(req.user._id);
+    const team = await getTeamAndUpdate(user._id);
+    if (!team) {
+      return res.status(400).json({ error: 'User is not on a team' });
+    }
+    if (!team.admins.includes(newOwner)) {
+      await setUserAdmin(newOwner);
+    }
+    team.owner = newOwner;
+    await team.save();
+    return res.json(team);
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+};
+
+export const removeAdmin = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const admin = await User.findById(id);
+    if (!admin) {
+      return res.status(400).json({ error: 'User not found' });
+    }
+    const team = await getTeamAndUpdate(admin._id);
+    if (!team.admins.includes(req.user._id)) {
+      return res.status(400).json({ error: 'Remover is not an admin' });
+    }
+    if (!team) {
+      return res.status(400).json({ error: 'User is not on a team' });
+    }
+    if (!team.admins.includes(admin._id)) {
+      return res.status(400).json({ error: 'Target is not an admin' });
+    }
+    if (team.owner.equals(admin._id)) {
+      return res.status(400).json({ error: 'Owner cannot be removed' });
+    }
+    team.admins.pull(admin._id);
+    admin.adminOf = null;
     await team.save();
     await admin.save();
     return res.json(team);
@@ -161,7 +202,9 @@ export const getTeam = async (req, res) => {
       return null;
     }
     await team.populate('members');
-    return res.json(team);
+    const teamData = team.toObject();
+    teamData.teamGoal = { ...teamData.teamGoal, actualCarbonReduction: teamData.carbonFootprint.weeklyReduction.total };
+    return res.json(teamData);
   } catch (error) {
     return res.status(400).json({ error: error.message });
   }
@@ -174,7 +217,6 @@ export const getJoinCode = async (req, res) => {
     if (!team) {
       return res.status(400).json({ error: 'User is not an admin' });
     }
-    console.log(team.joinCode);
     return res.json(team.joinCode);
   } catch (error) {
     return res.status(400).json({ error: error.message });
@@ -192,17 +234,14 @@ export async function updateTeamCarbonFootprint(team) {
       return Promise.resolve();
     }));
 
-    team.members.forEach((member) => {
-      console.log('member: ', member);
-    });
-
-    const categories = ['weekly', 'allTime', 'reduction'];
+    const categories = ['weekly', 'allTime', 'reduction', 'weeklyReduction'];
     const types = ['travel', 'food', 'house'];
 
     const newCarbonFootprint = {
       weekly: { total: 0 },
       allTime: { total: 0 },
       reduction: { total: 0 },
+      weeklyReduction: { total: 0 },
     };
 
     categories.forEach((category) => {
@@ -249,11 +288,76 @@ export async function updateLeaderboardForTeam(team) {
       };
     });
     leaderboard.sort((a, b) => { return b.carbonReduction - a.carbonReduction; });
+    leaderboard.splice(10);
     team.leaderboard = leaderboard;
     team.leaderboard_isStale = false;
     await team.save();
   } catch (error) {
     console.error('Failed to update leaderboard: ', error);
+    throw error;
+  }
+}
+
+export async function testRequest(req, res) {
+  try {
+    const team = await getTeamAndUpdate(req.user._id);
+    if (team) {
+      await team.populate('members');
+    }
+    return res.json(team);
+  } catch (error) {
+    console.error('Failed to test request: ', error);
+    return res.status(400).json({ error: error.message });
+  }
+}
+
+export async function setTeamGoal(req, res) {
+  try {
+    const user = await User.findById(req.user._id);
+    const team = await getTeamAndUpdate(user._id);
+    const { goal } = req.body;
+    if (!team) {
+      return res.status(400).json({ error: 'User is not on a team' });
+    }
+    if (!team.admins.includes(user._id)) {
+      return res.status(400).json({ error: 'User is not an admin' });
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const startOfWeek = new Date(today);
+    startOfWeek.setDate(today.getDate() - today.getDay());
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 7);
+
+    goal.startDate = startOfWeek;
+    goal.endDate = endOfWeek;
+    team.teamGoal = goal;
+    await team.save();
+    return res.json(team);
+  } catch (error) {
+    console.error('Failed to set team goal: ', error);
+    return res.status(400).json({ error: error.message });
+  }
+}
+
+export async function setTeamGoalsPast() {
+  try {
+    const teams = await Team.find({});
+    await Promise.all(teams.map(async (team) => {
+      if (team.teamGoal) {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        if (today > team.teamGoal.endDate) {
+          // This only works because we don't update the team once it has been set stale. Bad practice. Fix in the future.
+          team.pastTeamGoals.push({ ...team.teamGoal, actualCarbonReduction: team.carbonFootprint.weeklyReduction.total });
+          team.teamGoal = null;
+          await team.save();
+        }
+      }
+    }));
+  } catch (error) {
+    console.error('Failed to set past team goals: ', error);
     throw error;
   }
 }

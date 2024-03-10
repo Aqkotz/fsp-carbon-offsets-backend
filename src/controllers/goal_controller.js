@@ -25,11 +25,6 @@ const allGoals = [
     theme: 'travel',
   },
   {
-    description: 'Take a train instead of plane',
-    carbonReduction: 150,
-    theme: 'travel',
-  },
-  {
     description: 'Bring a resuable coffee cup',
     carbonReduction: 0.11,
     theme: 'food',
@@ -142,6 +137,9 @@ export async function getGoalsByTheme(req, res) {
 export async function setGoal(req, res) {
   try {
     const user = await User.findById(req.user._id);
+    if (user.goals.length >= 3) {
+      return res.status(400).json({ error: 'User already has 3 goals' });
+    }
     const goal = new Goal(req.body);
     await goal.save();
     user.goals.push(goal);
@@ -169,12 +167,29 @@ export async function getGoals(req, res) {
   }
 }
 
+export async function getPastGoals(req, res) {
+  try {
+    const user = await User.findById(req.user._id);
+    await user.populate('pastGoals');
+    const { pastGoals } = user;
+    return res.json(pastGoals);
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+}
+
 export async function deleteGoal(req, res) {
   try {
     const { id } = req.params;
+    const user = await User.findById(req.user._id);
+    if (user.goals.includes(id)) {
+      user.goals.pull(id);
+    } else if (user.pastGoals.includes(id)) {
+      user.pastGoals.pull(id);
+    } else {
+      return res.status(400).json({ error: 'User does not have goal' });
+    }
     await Goal.deleteOne({ _id: id });
-    const user = await User.findOne({ goals: id });
-    user.goals.pull(id);
     await user.save();
     return res.json({ id });
   } catch (error) {
@@ -187,12 +202,15 @@ export async function setGoalStatusForDay(req, res) {
     const { id } = req.params;
     const { status } = req.body;
     const goal = await Goal.findById(id);
+    const user = await User.findById(req.user._id);
+    if (!user.goals.includes(id)) {
+      return res.status(400).json({ error: 'User does not have this goal' });
+    }
     if (goal.streak.some((streak) => { return streak.date >= (new Date()).setHours(0, 0, 0, 0); })) {
       return res.json('goal already set for today');
     }
     goal.streak.push({ completed: status, date: new Date() });
     goal.data_isStale = true;
-    const user = await User.findOne({ goals: id });
     user.carbonFootprint_isStale = true;
     const team = await Team.findById(user.team);
     team.carbonFootprint_isStale = true;
@@ -245,12 +263,9 @@ function currentWeekForGoal(goal) {
 
 export async function updateGoalData(goal) {
   try {
-    console.log('Updating goal data', goal.description);
     const totalCarbonReduction = goal.streak.reduce((total, streak) => {
       return total + (streak.completed === 'completed' ? goal.carbonReduction : 0) ?? 0;
     }, 0) ?? 0;
-
-    console.log(totalCarbonReduction);
 
     goal.currentWeek = currentWeekForGoal(goal);
     goal.streakLength = 0;
@@ -265,9 +280,11 @@ export async function updateGoalData(goal) {
     goal.data_isStale = false;
 
     const { team } = await User.findOne({ goals: goal._id }).populate('team');
-    team.leaderboard_isStale = true;
-    team.carbonFootprint_isStale = true;
-    await team.save();
+    if (team) {
+      team.leaderboard_isStale = true;
+      team.carbonFootprint_isStale = true;
+      await team.save();
+    }
     await goal.save();
     return goal;
   } catch (error) {
@@ -286,5 +303,26 @@ export async function setAllGoalsStale() {
   } catch (error) {
     console.error('Failed to set all teams stale: ', error);
     throw error;
+  }
+}
+
+export async function setGoalPast(req, res) {
+  try {
+    const { id } = req.params;
+    const user = await User.findById(req.user._id);
+    if (!user.goals.includes(id)) {
+      return res.status(400).json({ error: 'User does not have this goal' });
+    }
+    user.goals.pull(id);
+    user.pastGoals.push(id);
+    user.carbonFootprint_isStale = true;
+    const team = await Team.findById(user.team);
+    team.carbonFootprint_isStale = true;
+    team.leaderboard_isStale = true;
+    await team.save();
+    await user.save();
+    return res.json({ id });
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
   }
 }

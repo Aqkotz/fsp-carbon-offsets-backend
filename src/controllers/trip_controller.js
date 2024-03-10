@@ -2,7 +2,7 @@ import axios from 'axios';
 import Trip from '../models/trip_model';
 import User from '../models/user_model';
 import Team from '../models/team_model';
-import { updateTeamCarbonFootprint } from './team_controller';
+import { getTeamAndUpdate } from './team_controller';
 import { updateUserCarbonFootprint } from './user_controller';
 
 // Update a trip
@@ -101,9 +101,6 @@ export const getCarbonFootprints = async (trip) => {
       car: carbonFootprints[2].footprint,
       legs: carbonFootprints[0].stops,
     };
-
-    console.log('Carbon footprints: ', out);
-
     return out;
   } catch (error) {
     console.error('Error calculating carbon footprints: ', error);
@@ -171,14 +168,10 @@ export const getTrips = async (req, res) => {
 };
 
 export const getTripEstimate = async (req, res) => {
-  console.log('Getting trip estimate...');
   try {
     const { legs, modeOfTravel } = req.body;
-    console.log('Legs: ', legs);
     const trip = new Trip({ legs, modeOfTravel });
-    console.log('Trip: ', trip);
     const carbonFootprints = await getCarbonFootprints(trip);
-    console.log('Carbon footprints: ', carbonFootprints);
     return res.json(carbonFootprints);
   } catch (error) {
     return res.status(400).json({ error: error.message });
@@ -193,15 +186,10 @@ export async function getCarbonFootprint(req, res) {
       await updateUserCarbonFootprint(user);
       user = await User.findById(req.user._id);
     }
-    let team = user.team ? await Team.findById(user.team) : null;
-    if (team && team.carbonFootprint_isStale) {
-      console.log(`Updating carbon footprint for team ${team.name}...`);
-      await updateTeamCarbonFootprint(team);
-      team = await Team.findById(user.team);
-    }
+    const team = await getTeamAndUpdate(user._id);
     const footprint = {
       user: user.carbonFootprint,
-      team: team.carbonFootprint,
+      team: team?.carbonFootprint,
     };
     return res.json(footprint);
   } catch (error) {
@@ -209,3 +197,26 @@ export async function getCarbonFootprint(req, res) {
     return res.status(400).json({ error: error.message });
   }
 }
+
+export const getUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (user.carbonFootprint_isStale) {
+      console.log(`Updating carbon footprint for user ${user.name}...`);
+      await updateUserCarbonFootprint(user);
+    }
+    const userData = user.toObject();
+    if (user.team) {
+      const team = await getTeamAndUpdate(user._id);
+      const leaderboardPosition = team.leaderboard.findIndex((entry) => { return entry.userId.equals(user._id); }) + 1;
+      let isOwner = false;
+      if (team.owner) {
+        isOwner = team.owner.equals(user._id);
+      }
+      return res.json({ ...userData, leaderboardPosition, isOwner });
+    }
+    return res.json({ ...userData, leaderboardPosition: null, isOwner: false });
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+};

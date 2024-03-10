@@ -5,6 +5,7 @@ const UserSchema = new Schema({
   netid: { type: String, unique: true },
   password: { type: String },
   goals: [{ type: Schema.Types.ObjectId, ref: 'Goal' }],
+  pastGoals: [{ type: Schema.Types.ObjectId, ref: 'Goal' }],
   name: { type: String },
   carbonFootprint: {
     weekly: {
@@ -20,6 +21,12 @@ const UserSchema = new Schema({
       food: { type: Number, default: 0 },
     },
     reduction: {
+      total: { type: Number, default: 0 },
+      travel: { type: Number, default: 0 },
+      house: { type: Number, default: 0 },
+      food: { type: Number, default: 0 },
+    },
+    weeklyReduction: {
       total: { type: Number, default: 0 },
       travel: { type: Number, default: 0 },
       house: { type: Number, default: 0 },
@@ -65,7 +72,6 @@ UserSchema.pre('save', async function beforeYourModelSave(next) {
 
 // function to compare a password and return a boolean
 UserSchema.methods.comparePassword = async function comparePassword(candidatePassword) {
-  console.log('comparePassword', candidatePassword, this.password);
   const comparison = await bcrypt.compare(candidatePassword, this.password);
   return comparison;
 };

@@ -12,51 +12,15 @@ router.get('/', (req, res) => {
   res.json({ message: 'welcome to FSP Carbon Offsets' });
 });
 
-router.get('/user', requireAuth, Users.getUser);
+// Auth routes
+router.post('/validate', Users.validateTicket); // validating duo tickets
 
-router.post('/validate', Users.validateTicket);
+router.post('/signin', requireSignin, Users.signin); // sign in didn't work so this deletes a user account, transfers their data, and then creates a new user account
 
-router.post('/signin', requireSignin, Users.signin);
+// User routes
+router.get('/user', requireAuth, Trips.getUser);
 
 router.get('/carbonfootprint', requireAuth, Trips.getCarbonFootprint);
-
-router.post('/trips', requireAuth, Trips.createTrip);
-
-router.post('/trips/estimate', requireAuth, Trips.getTripEstimate);
-
-router.post('/trips/:id', requireAuth, Trips.updateTrip);
-
-router.delete('/trips/:id', requireAuth, Trips.deleteTrip);
-
-router.get('/trips', requireAuth, Trips.getTrips);
-
-router.post('/posts', requireAuth, Post.createPost);
-
-router.get('/posts', requireAuth, Post.getPosts);
-
-router.get('/posts/:id', requireAuth, Post.getPost);
-
-router.delete('/posts/:id', requireAuth, Post.deletePost);
-
-router.post('/posts/:id', requireAuth, Post.updatePost);
-
-router.get('/posts/theme/:theme', requireAuth, Post.getPostsByTheme);
-
-router.post('/teams', requireAuth, Team.createTeam);
-
-router.get('/teams', requireAuth, Team.getTeam);
-
-router.post('/teams/join', requireAuth, Team.joinTeam);
-
-router.get('/teams/joincode', requireAuth, Team.getJoinCode);
-
-router.post('/teams/leave', requireAuth, Team.leaveTeam);
-
-router.post('/teams/transfer', requireAuth, Team.transferOwnership);
-
-router.post('/teams/admin', requireAuth, Team.addAdmin);
-
-router.delete('/teams', requireAuth, Team.deleteTeam);
 
 router.post('/user/foodemissions', Users.getUserFoodEmission);
 
@@ -70,16 +34,69 @@ router.post('/house', requireAuth, Users.setHouseData);
 
 router.get('/house', requireAuth, Users.getHouse);
 
-router.get('/themes', Goal.getThemes);
+// Trips routes
+router.post('/trips', requireAuth, Trips.createTrip);
+
+router.post('/trips/estimate', requireAuth, Trips.getTripEstimate);
+
+router.post('/trips/:id', requireAuth, Trips.updateTrip);
+
+router.delete('/trips/:id', requireAuth, Trips.deleteTrip);
+
+router.get('/trips', requireAuth, Trips.getTrips);
+
+// Helpful resources routes
+router.post('/posts', requireAuth, Post.createPost);
+
+router.get('/posts', requireAuth, Post.getPosts);
+
+router.get('/posts/:id', requireAuth, Post.getPost);
+
+router.delete('/posts/:id', requireAuth, Post.deletePost);
+
+router.post('/posts/:id', requireAuth, Post.updatePost);
+
+router.get('/posts/theme/:theme', requireAuth, Post.getPostsByTheme);
+
+// Team routes
+router.post('/teams', requireAuth, Team.createTeam);
+
+router.get('/teams', requireAuth, Team.getTeam); // This route for some reason took 20 minutes and gave me a 502. No idea why. /testrequest replaces its use in the app.
+
+router.post('/teams/join', requireAuth, Team.joinTeam);
+
+router.get('/teams/joincode', requireAuth, Team.getJoinCode);
+
+router.post('/teams/leave', requireAuth, Team.leaveTeam);
+
+router.post('/teams/transfer', requireAuth, Team.transferOwnership);
+
+router.post('/teams/admin', requireAuth, Team.addAdmin);
+
+router.delete('/teams', requireAuth, Team.deleteTeam);
+
+router.delete('/teams/admin/:id', requireAuth, Team.removeAdmin);
+
+router.post('/teams/goal', requireAuth, Team.setTeamGoal);
+
+// Goal routes
+router.get('/goals/themes', Goal.getThemes);
 
 router.get('/goals/:theme', Goal.getGoalsByTheme);
 
 router.post('/goals', requireAuth, Goal.setGoal);
+
+router.get('/pastgoals', requireAuth, Goal.getPastGoals); // I don't know why /goals/past didn't work for this route
 
 router.get('/goals', requireAuth, Goal.getGoals);
 
 router.delete('/goals/:id', requireAuth, Goal.deleteGoal);
 
 router.post('/goals/status/:id', requireAuth, Goal.setGoalStatusForDay);
+
+router.post('/goals/past/:id', requireAuth, Goal.setGoalPast);
+
+// Test routes
+router.get('/testrequest', requireAuth, Team.getTeam);
 
 export default router;

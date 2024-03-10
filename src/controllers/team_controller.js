@@ -234,7 +234,7 @@ export async function updateTeamCarbonFootprint(team) {
       return Promise.resolve();
     }));
 
-    const categories = ['weekly', 'allTime', 'reduction'];
+    const categories = ['weekly', 'allTime', 'reduction', 'weeklyReduction'];
     const types = ['travel', 'food', 'house'];
 
     const newCarbonFootprint = {

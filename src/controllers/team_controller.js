@@ -203,7 +203,7 @@ export const getTeam = async (req, res) => {
     }
     await team.populate('members');
     const teamData = team.toObject();
-    teamData.teamGoal = { ...teamData.teamGoal, totalCarbonReduction: teamData.carbonFootprint.weeklyReduction.total };
+    teamData.teamGoal = { ...teamData.teamGoal, actualCarbonReduction: teamData.carbonFootprint.weeklyReduction.total };
     return res.json(teamData);
   } catch (error) {
     return res.status(400).json({ error: error.message });

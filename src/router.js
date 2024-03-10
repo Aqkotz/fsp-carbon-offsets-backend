@@ -13,9 +13,9 @@ router.get('/', (req, res) => {
 });
 
 // Auth routes
-router.post('/validate', Users.validateTicket);
+router.post('/validate', Users.validateTicket); // validating duo tickets
 
-router.post('/signin', requireSignin, Users.signin);
+router.post('/signin', requireSignin, Users.signin); // sign in didn't work so this deletes a user account, transfers their data, and then creates a new user account
 
 // User routes
 router.get('/user', requireAuth, Trips.getUser);
@@ -61,7 +61,7 @@ router.get('/posts/theme/:theme', requireAuth, Post.getPostsByTheme);
 // Team routes
 router.post('/teams', requireAuth, Team.createTeam);
 
-router.get('/teams', requireAuth, Team.getTeam);
+router.get('/teams', requireAuth, Team.getTeam); // This route for some reason took 20 minutes and gave me a 502. No idea why. /testrequest replaces its use in the app.
 
 router.post('/teams/join', requireAuth, Team.joinTeam);
 
@@ -86,7 +86,7 @@ router.get('/goals/:theme', Goal.getGoalsByTheme);
 
 router.post('/goals', requireAuth, Goal.setGoal);
 
-router.get('/pastgoals', requireAuth, Goal.getPastGoals);
+router.get('/pastgoals', requireAuth, Goal.getPastGoals); // I don't know why /goals/past didn't work for this route
 
 router.get('/goals', requireAuth, Goal.getGoals);
 
@@ -97,6 +97,6 @@ router.post('/goals/status/:id', requireAuth, Goal.setGoalStatusForDay);
 router.post('/goals/past/:id', requireAuth, Goal.setGoalPast);
 
 // Test routes
-router.get('/testrequest', requireAuth, Team.testRequest);
+router.get('/testrequest', requireAuth, Team.getTeam);
 
 export default router;

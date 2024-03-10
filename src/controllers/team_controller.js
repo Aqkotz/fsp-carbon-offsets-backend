@@ -197,14 +197,14 @@ export const deleteTeam = async (req, res) => {
 
 export const getTeam = async (req, res) => {
   try {
-    // const user = await User.findById(req.user._id);
-    // const team = await Team.findById(user.team);
     const team = await getTeamAndUpdate(req.user._id);
     if (!team) {
       return null;
     }
     await team.populate('members');
-    return res.json(team);
+    const teamData = team.toObject();
+    teamData.teamGoal = { ...teamData.teamGoal, totalCarbonReduction: teamData.carbonFootprint.weeklyReduction.total };
+    return res.json(teamData);
   } catch (error) {
     return res.status(400).json({ error: error.message });
   }
@@ -308,5 +308,56 @@ export async function testRequest(req, res) {
   } catch (error) {
     console.error('Failed to test request: ', error);
     return res.status(400).json({ error: error.message });
+  }
+}
+
+export async function setTeamGoal(req, res) {
+  try {
+    const user = await User.findById(req.user._id);
+    const team = await getTeamAndUpdate(user._id);
+    const { goal } = req.body;
+    if (!team) {
+      return res.status(400).json({ error: 'User is not on a team' });
+    }
+    if (!team.admins.includes(user._id)) {
+      return res.status(400).json({ error: 'User is not an admin' });
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const startOfWeek = new Date(today);
+    startOfWeek.setDate(today.getDate() - today.getDay());
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 7);
+
+    goal.startDate = startOfWeek;
+    goal.endDate = endOfWeek;
+    team.teamGoal = goal;
+    await team.save();
+    return res.json(team);
+  } catch (error) {
+    console.error('Failed to set team goal: ', error);
+    return res.status(400).json({ error: error.message });
+  }
+}
+
+export async function setTeamGoalsPast() {
+  try {
+    const teams = await Team.find({});
+    await Promise.all(teams.map(async (team) => {
+      if (team.teamGoal) {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        if (today > team.teamGoal.endDate) {
+          // This only works because we don't update the team once it has been set stale. Bad practice. Fix in the future.
+          team.pastTeamGoals.push({ ...team.teamGoal, actualCarbonReduction: team.carbonFootprint.weeklyReduction.total });
+          team.teamGoal = null;
+          await team.save();
+        }
+      }
+    }));
+  } catch (error) {
+    console.error('Failed to set past team goals: ', error);
+    throw error;
   }
 }

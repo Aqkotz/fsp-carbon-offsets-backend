@@ -77,6 +77,8 @@ router.delete('/teams', requireAuth, Team.deleteTeam);
 
 router.delete('/teams/admin/:id', requireAuth, Team.removeAdmin);
 
+router.post('/teams/goal', requireAuth, Team.setTeamGoal);
+
 // Goal routes
 router.get('/goals/themes', Goal.getThemes);
 

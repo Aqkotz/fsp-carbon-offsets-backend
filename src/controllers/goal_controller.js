@@ -25,11 +25,6 @@ const allGoals = [
     theme: 'travel',
   },
   {
-    description: 'Take a train instead of plane',
-    carbonReduction: 150,
-    theme: 'travel',
-  },
-  {
     description: 'Bring a resuable coffee cup',
     carbonReduction: 0.11,
     theme: 'food',

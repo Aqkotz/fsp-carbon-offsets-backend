@@ -6,6 +6,7 @@ import xml2js from 'xml2js';
 import User from '../models/user_model';
 import Trip from '../models/trip_model';
 import Team from '../models/team_model';
+import Goal from '../models/goal_model';
 import {
   getFoodEmissionWeekly, getFoodEmissionAllTime, getHouseEmissionWeekly, getHouseEmissionAllTime,
 } from '../utilities/carbon_calculation';
@@ -39,6 +40,7 @@ export async function createUser({
   user.password = password;
   user.name = name;
   user.goals = goals;
+  user.team = null;
 
   try {
     const newUser = await user.save();
@@ -297,5 +299,40 @@ export async function setAllUsersStale() {
   } catch (error) {
     console.error('Failed to set all users stale: ', error);
     throw error;
+  }
+}
+
+export async function fixTeams(req, res) {
+  try {
+    const users = await User.find({});
+    await Promise.all(users.map(async (user) => {
+      if (!user.team) {
+        user.team = null;
+        await user.save();
+      }
+    }));
+    return res.json({ message: 'Fixed teams' });
+  } catch (error) {
+    console.error('Failed to fix teams: ', error);
+    return res.status(400).json({ error: error.message });
+  }
+}
+
+export async function deleteUser(req, res) {
+  try {
+    const user = await User.findById(req.user._id);
+    await Promise.all(user.trips.map(async (trip) => {
+      await Trip.findByIdAndDelete(trip);
+    }));
+    await Promise.all(user.goals.map(async (goal) => {
+      await Goal.findByIdAndDelete(goal);
+    }));
+    await Promise.all(user.pastGoals.map(async (goal) => {
+      await Goal.findByIdAndDelete(goal);
+    }));
+    await User.findByIdAndDelete(req.user._id);
+    return res.json({ message: `Deleted user ${user.name}` });
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
   }
 }

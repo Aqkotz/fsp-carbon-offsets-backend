@@ -30,7 +30,7 @@ const allGoals = [
     theme: 'food',
   },
   {
-    description: 'Use and refil a reusable water bottle',
+    description: 'Use and refill a reusable water bottle',
     carbonReduction: 0.08,
     theme: 'food',
   },

@@ -34,6 +34,8 @@ router.post('/house', requireAuth, Users.setHouseData);
 
 router.get('/house', requireAuth, Users.getHouse);
 
+router.delete('/user', requireAuth, Users.deleteUser);
+
 // Trips routes
 router.post('/trips', requireAuth, Trips.createTrip);
 
@@ -61,7 +63,7 @@ router.get('/posts/theme/:theme', requireAuth, Post.getPostsByTheme);
 // Team routes
 router.post('/teams', requireAuth, Team.createTeam);
 
-router.get('/teams', requireAuth, Team.getTeam); // This route for some reason took 20 minutes and gave me a 502. No idea why. /testrequest replaces its use in the app.
+router.get('/teams', requireAuth, Team.testRequest); // This route for some reason took 20 minutes and gave me a 502. No idea why. /testrequest replaces its use in the app.
 
 router.post('/teams/join', requireAuth, Team.joinTeam);
 
@@ -98,5 +100,9 @@ router.post('/goals/past/:id', requireAuth, Goal.setGoalPast);
 
 // Test routes
 router.get('/testrequest', requireAuth, Team.getTeam);
+
+router.post('/fix', requireAuth, Users.fixTeams);
+
+router.get('/teamtester', requireAuth, Team.testRequest);
 
 export default router;

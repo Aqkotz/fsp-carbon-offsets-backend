@@ -303,6 +303,8 @@ export async function testRequest(req, res) {
     const team = await getTeamAndUpdate(req.user._id);
     if (team) {
       await team.populate('members');
+      const teamData = team.toObject();
+      teamData.teamGoal = { ...teamData.teamGoal, actualCarbonReduction: teamData.carbonFootprint.weeklyReduction.total };
     }
     return res.json(team);
   } catch (error) {

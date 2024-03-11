@@ -319,12 +319,13 @@ export async function updateLeaderboardForTeam(team) {
 export async function testRequest(req, res) {
   try {
     const team = await getTeamAndUpdate(req.user._id);
+    let teamData = null;
     if (team) {
       await team.populate('members');
-      const teamData = team.toObject();
+      teamData = team.toObject();
       teamData.teamGoal = { ...teamData.teamGoal, actualCarbonReduction: teamData.carbonFootprint.weeklyReduction.total };
     }
-    return res.json(team);
+    return res.json(teamData);
   } catch (error) {
     console.error('Failed to test request: ', error);
     return res.status(400).json({ error: error.message });

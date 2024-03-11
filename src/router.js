@@ -103,4 +103,6 @@ router.get('/testrequest', requireAuth, Team.getTeam);
 
 router.post('/fix', requireAuth, Users.fixTeams);
 
+router.get('/teamtester', requireAuth, Team.testRequest);
+
 export default router;

@@ -63,7 +63,7 @@ router.get('/posts/theme/:theme', requireAuth, Post.getPostsByTheme);
 // Team routes
 router.post('/teams', requireAuth, Team.createTeam);
 
-router.get('/teams', requireAuth, Team.getTeam); // This route for some reason took 20 minutes and gave me a 502. No idea why. /testrequest replaces its use in the app.
+router.get('/teams', requireAuth, Team.testRequest); // This route for some reason took 20 minutes and gave me a 502. No idea why. /testrequest replaces its use in the app.
 
 router.post('/teams/join', requireAuth, Team.joinTeam);
 

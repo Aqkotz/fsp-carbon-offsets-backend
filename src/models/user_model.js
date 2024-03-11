@@ -46,7 +46,7 @@ const UserSchema = new Schema({
     },
     food: { type: [Schema.Types.Mixed], default: [] },
   },
-  team: { type: Schema.Types.ObjectId, ref: 'Team' },
+  team: { type: Schema.Types.ObjectId, ref: 'Team', required: true },
 }, {
   toObject: { virtuals: true },
   toJSON: { virtuals: true },

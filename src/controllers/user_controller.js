@@ -299,3 +299,19 @@ export async function setAllUsersStale() {
     throw error;
   }
 }
+
+export async function fixTeams(req, res) {
+  try {
+    const users = await User.find({});
+    await Promise.all(users.map(async (user) => {
+      if (!user.team) {
+        user.team = null;
+        await user.save();
+      }
+    }));
+    return res.json({ message: 'Fixed teams' });
+  } catch (error) {
+    console.error('Failed to fix teams: ', error);
+    return res.status(400).json({ error: error.message });
+  }
+}

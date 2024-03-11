@@ -39,6 +39,7 @@ export async function createUser({
   user.password = password;
   user.name = name;
   user.goals = goals;
+  user.team = null;
 
   try {
     const newUser = await user.save();

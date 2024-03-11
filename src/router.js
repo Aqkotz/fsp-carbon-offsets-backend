@@ -34,6 +34,8 @@ router.post('/house', requireAuth, Users.setHouseData);
 
 router.get('/house', requireAuth, Users.getHouse);
 
+router.delete('/user', requireAuth, Users.deleteUser);
+
 // Trips routes
 router.post('/trips', requireAuth, Trips.createTrip);
 

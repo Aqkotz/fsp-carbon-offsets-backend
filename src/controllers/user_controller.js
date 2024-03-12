@@ -158,7 +158,7 @@ export async function updateUserCarbonFootprint(user) {
     if (user.footprintData.food.length > 0) {
       const lastFood = user.footprintData.food[user.footprintData.food.length - 1];
       newFootprint.allTime.food = getFoodEmissionAllTime(user.footprintData.food);
-      newFootprint.weekly.food = lastFood.date >= weekStartDate ? getFoodEmissionWeekly(lastFood) : 0;
+      newFootprint.weekly.food = lastFood.date >= lastWeekStartDate ? getFoodEmissionWeekly(lastFood) : 0;
     } else {
       newFootprint.allTime.food = 0;
       newFootprint.weekly.food = 0;

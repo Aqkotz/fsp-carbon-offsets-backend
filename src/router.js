@@ -69,6 +69,8 @@ router.post('/teams/join', requireAuth, Team.joinTeam);
 
 router.get('/teams/joincode', requireAuth, Team.getJoinCode);
 
+router.post('/teams/joincode', requireAuth, Team.regenerateJoinCode);
+
 router.post('/teams/leave', requireAuth, Team.leaveTeam);
 
 router.post('/teams/transfer', requireAuth, Team.transferOwnership);

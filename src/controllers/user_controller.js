@@ -138,6 +138,8 @@ export async function updateUserCarbonFootprint(user) {
     const startDateTimestamp = !team ? 0 : (team.startDate instanceof Date ? team.startDate.getTime() : team.startDate);
     const weekStartDateTimestamp = !team ? 0 : startDateTimestamp + (week - 1) * 7 * 24 * 60 * 60 * 1000;
     const weekStartDate = !team ? Date.now() - 7 * 24 * 60 * 60 * 1000 : new Date(weekStartDateTimestamp);
+    const lastWeekStartDate = new Date(weekStartDate);
+    lastWeekStartDate.setDate(lastWeekStartDate.getDate() - 7);
 
     const newFootprint = {
       weekly: {},
@@ -205,6 +207,7 @@ export async function updateUserCarbonFootprint(user) {
 
     user.carbonFootprint = newFootprint;
     user.carbonFootprint_isStale = false;
+    user.footprintData.loggedLastWeekFood = user.footprintData.food.some((food) => { return food.date >= lastWeekStartDate; });
     await user.save();
   } catch (error) {
     console.error('Error updating carbon footprints: ', error);
@@ -238,7 +241,15 @@ export async function addFoodWeeklyConsumption(req, res) {
   try {
     const user = await User.findById(req.user._id);
     const { consumption } = req.body;
-    consumption.date = new Date();
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const startOfWeek = new Date(today);
+    startOfWeek.setDate(today.getDate() - today.getDay());
+    startOfWeek.setDate(startOfWeek.getDate() - 7);
+    consumption.date = startOfWeek;
+    if (user.footprintData.loggedLastWeekFood) {
+      return res.status(400).json({ error: 'Food consumption already logged for last week' });
+    }
     user.footprintData.food.push(consumption);
     user.carbonFootprint_isStale = true;
     const team = await Team.findById(user.team);

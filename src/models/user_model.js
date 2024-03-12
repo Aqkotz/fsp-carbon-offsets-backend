@@ -45,6 +45,7 @@ const UserSchema = new Schema({
       residents: { type: Number, default: 0 },
     },
     food: { type: [Schema.Types.Mixed], default: [] },
+    loggedLastWeekFood: { type: Boolean, default: false },
   },
   team: { type: Schema.Types.ObjectId, ref: 'Team' },
 }, {

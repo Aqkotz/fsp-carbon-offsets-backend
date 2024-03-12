@@ -195,6 +195,24 @@ export const deleteTeam = async (req, res) => {
   }
 };
 
+export const regenerateJoinCode = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    const team = await getTeamAndUpdate(user._id);
+    if (!team) {
+      return res.status(400).json({ error: 'User is not on a team' });
+    }
+    if (!team.admins.includes(user._id)) {
+      return res.status(400).json({ error: 'User is not an admin' });
+    }
+    team.joinCode = Math.random().toString(36).substring(2, 7).toUpperCase();
+    await team.save();
+    return res.json(team.joinCode);
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+};
+
 export const getTeam = async (req, res) => {
   try {
     const team = await getTeamAndUpdate(req.user._id);
@@ -301,12 +319,13 @@ export async function updateLeaderboardForTeam(team) {
 export async function testRequest(req, res) {
   try {
     const team = await getTeamAndUpdate(req.user._id);
+    let teamData = null;
     if (team) {
       await team.populate('members');
-      const teamData = team.toObject();
+      teamData = team.toObject();
       teamData.teamGoal = { ...teamData.teamGoal, actualCarbonReduction: teamData.carbonFootprint.weeklyReduction.total };
     }
-    return res.json(team);
+    return res.json(teamData);
   } catch (error) {
     console.error('Failed to test request: ', error);
     return res.status(400).json({ error: error.message });

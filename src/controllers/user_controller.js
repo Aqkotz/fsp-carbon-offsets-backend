@@ -207,7 +207,10 @@ export async function updateUserCarbonFootprint(user) {
 
     user.carbonFootprint = newFootprint;
     user.carbonFootprint_isStale = false;
-    user.footprintData.loggedLastWeekFood = user.footprintData.food.some((food) => { return food.date >= lastWeekStartDate; });
+    user.footprintData.loggedLastWeekFood = user.footprintData.food.some((food) => {
+      console.log(`food date: ${food.date}, lastWeekStartDate: ${lastWeekStartDate}, food date >= lastWeekStartDate: ${food.date >= lastWeekStartDate}`);
+      return food.date >= lastWeekStartDate;
+    });
     await user.save();
   } catch (error) {
     console.error('Error updating carbon footprints: ', error);

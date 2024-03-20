@@ -309,6 +309,7 @@ export async function updateLeaderboardForTeam(team) {
     leaderboard.splice(10);
     team.leaderboard = leaderboard;
     team.leaderboard_isStale = false;
+    team.teamSize = team.members.length;
     await team.save();
   } catch (error) {
     console.error('Failed to update leaderboard: ', error);

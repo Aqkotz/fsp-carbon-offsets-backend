@@ -52,6 +52,7 @@ const teamSchema = new mongoose.Schema({
   }],
   leaderboard_isStale: { type: Boolean, default: true },
   timeZone: { type: String, default: 'America/New_York' },
+  teamSize: { type: Number, default: 0 },
 }, {
   toObject: { virtuals: true },
   toJSON: { virtuals: true },

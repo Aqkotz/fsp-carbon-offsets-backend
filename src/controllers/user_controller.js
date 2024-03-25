@@ -137,7 +137,7 @@ export async function updateUserCarbonFootprint(user) {
     const week = !team ? 1 : Math.floor((Date.now() - team.startDate) / (1000 * 60 * 60 * 24 * 7)) + 1;
     const startDateTimestamp = !team ? 0 : (team.startDate instanceof Date ? team.startDate.getTime() : team.startDate);
     const weekStartDateTimestamp = !team ? 0 : startDateTimestamp + (week - 1) * 7 * 24 * 60 * 60 * 1000;
-    const weekStartDate = !team ? Date.now() - 7 * 24 * 60 * 60 * 1000 : new Date(weekStartDateTimestamp);
+    const weekStartDate = !team ? new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) : new Date(weekStartDateTimestamp);
     weekStartDate.setHours(0, 0, 0, 0);
     const lastWeekStartDate = new Date(weekStartDate);
     lastWeekStartDate.setDate(lastWeekStartDate.getDate() - 7);
@@ -271,11 +271,14 @@ export async function setHouseData(req, res) {
   try {
     const user = await User.findById(req.user._id);
     const { house } = req.body;
+    console.log('house: ', house);
     user.footprintData.house = house;
     user.carbonFootprint_isStale = true;
     const team = await Team.findById(user.team);
-    team.carbonFootprint_isStale = true;
-    team.save();
+    if (team) {
+      team.carbonFootprint_isStale = true;
+      team.save();
+    }
     await user.save();
     return res.json(user.footprintData.house);
   } catch (error) {

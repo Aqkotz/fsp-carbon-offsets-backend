@@ -271,11 +271,14 @@ export async function setHouseData(req, res) {
   try {
     const user = await User.findById(req.user._id);
     const { house } = req.body;
+    console.log('house: ', house);
     user.footprintData.house = house;
     user.carbonFootprint_isStale = true;
     const team = await Team.findById(user.team);
-    team.carbonFootprint_isStale = true;
-    team.save();
+    if (team) {
+      team.carbonFootprint_isStale = true;
+      team.save();
+    }
     await user.save();
     return res.json(user.footprintData.house);
   } catch (error) {
